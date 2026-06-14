@@ -1,0 +1,2240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Inteligente de Monitoramento de EPIs - Facchini</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+
+  <style>
+    :root {
+      --color-primary-red: #E31C25;
+      --color-red-dark: #A81017;
+      --color-red-glow: rgba(227, 28, 37, 0.1);
+      --color-black: #0F0F11;
+      --color-black-light: #1E1E22;
+      --color-bg-light: #FAFAFA;
+      --color-card-bg: #FFFFFF;
+      --color-text-dark: #121214;
+      --color-text-muted: #555860;
+      --color-white: #FFFFFF;
+      --color-border: #EAEAEA;
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-bg-light);
+      color: var(--color-text-dark);
+      overflow-x: hidden;
+    }
+
+    /* ---- Progress bar ---- */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 4px;
+      background-color: var(--color-primary-red);
+      z-index: 1000;
+    }
+
+    /* ---- Header ---- */
+    /* ---- Header ---- */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px 8%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--color-border);
+      transition: var(--transition-smooth);
+    }
+
+    header.scrolled {
+      padding: 14px 8%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 22px;
+      color: #121214;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--color-primary-red);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.3s;
+      position: relative;
+      padding: 4px 0;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--color-primary-red);
+    }
+
+    .nav-links a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--color-primary-red);
+      border-radius: 2px;
+    }
+
+    .btn-cta {
+      background-color: var(--color-primary-red);
+      color: var(--color-white);
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: var(--transition-smooth);
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(227, 28, 37, 0.25);
+    }
+
+    .btn-cta:hover {
+      background-color: var(--color-red-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(227, 28, 37, 0.35);
+    }
+
+    /* =============================================
+       HERO INTRO — Pinned full-height scroll scene
+       ============================================= */
+
+    /* The outer wrapper which gets pinned */
+    .hero-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #FFFFFF;
+    }
+
+    /* White/light left half — text content */
+    .hero-left {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 5% 120px 8%;
+      z-index: 10;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 6px 14px;
+      background-color: var(--color-red-glow);
+      color: var(--color-primary-red);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: 46px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--color-text-dark);
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    .hero-title span {
+      color: var(--color-primary-red);
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+      margin-bottom: 35px;
+      max-width: 95%;
+    }
+
+    .hero-btn-group {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .btn-hero-primary {
+      background-color: var(--color-primary-red);
+      color: var(--color-white);
+      padding: 16px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      transition: var(--transition-smooth);
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(227, 28, 37, 0.25);
+    }
+
+    .btn-hero-primary:hover {
+      background-color: var(--color-red-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(227, 28, 37, 0.35);
+    }
+
+    .btn-hero-secondary {
+      background-color: var(--color-white);
+      color: var(--color-text-dark);
+      padding: 16px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      transition: var(--transition-smooth);
+      border: 1px solid var(--color-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-hero-secondary:hover {
+      background-color: var(--color-bg-light);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .hero-feature-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .hero-feature-icon {
+      background: var(--color-red-glow);
+      padding: 8px;
+      border-radius: 8px;
+      color: var(--color-primary-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Hero Carousel slides style */
+    .hero-carousel-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+      z-index: 1;
+    }
+
+    .hero-carousel-slide.active {
+      opacity: 1;
+    }
+
+    /* Red right panel — the element that slides over everything */
+    .hero-red-panel {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      /* starts at the right half */
+      width: 50%;
+      height: 100%;
+      background: radial-gradient(circle at 85% 15%, #ff3a44 0%, #a30a11 100%);
+      z-index: 20;
+      overflow: hidden;
+      will-change: left, width;
+    }
+
+    /* Truck image wrapper inside red panel */
+    .hero-truck-img {
+      position: absolute;
+      inset: 0;
+      opacity: 1;
+      will-change: opacity;
+    }
+
+    /* Opaque white fade overlay to blend the right panel edge */
+    .hero-truck-fade {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 50%);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Text layer wrapper (all typing text centered in red panel) */
+    .hero-text-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      opacity: 0;
+      z-index: 3;
+      padding: 40px;
+      text-align: center;
+    }
+
+    /* Brand name that appears after image fades — used for both FACCHINI and PROJETO EPI */
+    .hero-brand-name {
+      font-size: 90px;
+      font-weight: 900;
+      color: var(--color-white);
+      letter-spacing: 8px;
+      opacity: 0;
+      transform: translateY(0px);
+      will-change: opacity, transform;
+      user-select: none;
+    }
+
+    /* ---- Hero Question full layout ---- */
+    .hero-question {
+      font-size: 96px;
+      font-weight: 900;
+      color: var(--color-white);
+      letter-spacing: 3px;
+      opacity: 0;
+      user-select: none;
+      text-align: center;
+      line-height: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 6%;
+      max-height: 100%;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    /* ---- Hero Question badge ---- */
+    .hero-question-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 18px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 40px;
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-family: var(--font-primary);
+      margin-bottom: 28px;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-question-badge::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      animation: badge-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes badge-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* ---- Hero decorative line ---- */
+    .hero-question-divider {
+      width: 60px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 2px;
+      margin: 20px auto 0 auto;
+    }
+
+    /* ---- Hero EPI Text reveal block ---- */
+    .hero-epi-text-block {
+      opacity: 0;
+      transform: translateY(20px);
+      margin-top: 30px;
+      max-width: 720px;
+      text-align: center;
+      transition: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 32px;
+      text-align: left;
+    }
+
+    .hero-epi-text-block p {
+      font-size: 12.5px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.7;
+      font-family: var(--font-primary);
+      text-transform: none;
+      letter-spacing: 0;
+      padding-left: 12px;
+      border-left: 2px solid rgba(255, 255, 255, 0.2);
+      margin: 0;
+    }
+
+    /* ---- Red panel particles ---- */
+    .hero-particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .hero-particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      animation: particle-float linear infinite;
+    }
+
+    @keyframes particle-float {
+      0%   { transform: translateY(110vh) scale(0.6); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+    }
+
+    /* ---- Hero Typewriter ---- */
+    .hero-typewriter {
+      font-size: 22px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      text-transform: none;
+      letter-spacing: 2px;
+      margin-top: 22px;
+      font-family: var(--font-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid rgba(255, 255, 255, 0.85);
+      width: 0;
+      display: inline-block;
+      animation: typewriter-cursor 0.8s step-end infinite;
+    }
+
+    .hero-typewriter.typing {
+      animation: typewriter-text 1.2s steps(18, end) forwards,
+                 typewriter-cursor 0.8s step-end infinite;
+    }
+
+    @keyframes typewriter-text {
+      from { width: 0; }
+      to   { width: 18ch; }
+    }
+
+    @keyframes typewriter-cursor {
+      0%, 100% { border-right-color: rgba(255, 255, 255, 0.85); }
+      50%       { border-right-color: transparent; }
+    }
+
+
+
+    /* ---- Arrow navigation button ---- */
+    #hero-arrow-btn {
+      position: fixed;
+      bottom: 36px;
+      right: 44px;
+      z-index: 500;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--color-primary-red);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 30px rgba(227, 28, 37, 0.45);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+      outline: none;
+    }
+
+    #hero-arrow-btn:hover {
+      transform: scale(1.12) translateY(-2px);
+      box-shadow: 0 14px 40px rgba(227, 28, 37, 0.6);
+    }
+
+    #hero-arrow-btn:active {
+      transform: scale(0.96);
+    }
+
+    #hero-arrow-btn svg {
+      width: 26px;
+      height: 26px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s;
+    }
+
+    /* =============================================
+       Sections below the hero
+       ============================================= */
+    section {
+      padding: 100px 8%;
+      position: relative;
+      background-color: var(--color-bg-light);
+    }
+
+    /* Section Title Styles */
+    .sec-header {
+      margin-bottom: 60px;
+      max-width: 700px;
+    }
+
+    .sec-category {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--color-primary-red);
+      margin-bottom: 8px;
+    }
+
+    .sec-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--color-text-dark);
+      line-height: 1.2;
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--color-card-bg);
+      border-radius: 16px;
+      padding: 35px;
+      border: 1px solid var(--color-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(227, 28, 37, 0.08);
+      border-color: var(--color-primary-red);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      margin-bottom: 15px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--color-text-muted);
+    }
+
+    .problem-card {
+      border-left: 4px solid var(--color-primary-red);
+    }
+
+
+
+    /* Step badge */
+    .step-badge {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background-color: var(--color-red-glow);
+      color: var(--color-primary-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    /* Benefit badges */
+    .benefit-header-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+    }
+
+    .benefit-header-badge.red {
+      background-color: var(--color-red-glow);
+      color: var(--color-primary-red);
+    }
+
+    .benefit-header-badge.black {
+      background-color: #EAEAEA;
+      color: var(--color-black);
+    }
+
+    /* Demo */
+    .demo-container {
+      background-color: var(--color-white);
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+    }
+
+    .demo-header {
+      background-color: var(--color-black);
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .demo-dot:nth-child(1) {
+      background-color: #EF4444;
+    }
+
+    .demo-dot:nth-child(2) {
+      background-color: #F59E0B;
+    }
+
+    .demo-dot:nth-child(3) {
+      background-color: #10B981;
+    }
+
+    .demo-body {
+      padding: 40px;
+    }
+
+    .demo-flow {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .demo-flow::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background-color: var(--color-border);
+      z-index: 1;
+    }
+
+    .demo-flow-step {
+      width: 28%;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .demo-flow-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: var(--color-white);
+      border: 3px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--color-text-dark);
+      transition: var(--transition-smooth);
+    }
+
+    .demo-flow-step.active .demo-flow-icon {
+      border-color: var(--color-primary-red);
+      color: var(--color-primary-red);
+      background-color: var(--color-red-glow);
+      box-shadow: 0 0 20px rgba(227, 28, 37, 0.2);
+    }
+
+    /* Stats */
+    .stat-box {
+      text-align: center;
+      padding: 30px;
+    }
+
+    .stat-val {
+      font-size: 64px;
+      font-weight: 800;
+      color: var(--color-primary-red);
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      margin-bottom: 5px;
+    }
+
+    /* Quote section */
+    .quote-section {
+      background: linear-gradient(135deg, var(--color-black) 0%, #17171C 100%);
+      color: var(--color-white);
+      text-align: center;
+      padding: 120px 15%;
+    }
+
+    .quote-content {
+      font-size: 26px;
+      font-weight: 600;
+      line-height: 1.6;
+      font-style: italic;
+      margin-bottom: 30px;
+    }
+
+    .quote-author {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-primary-red);
+      letter-spacing: 2px;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--color-black);
+      color: var(--color-white);
+      padding: 80px 8% 40px 8%;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 50px;
+      margin-bottom: 50px;
+    }
+
+    .footer-desc {
+      color: #A0A0AB;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-top: 15px;
+      max-width: 350px;
+    }
+
+    .footer-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--color-white);
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 12px;
+    }
+
+    .footer-links a {
+      color: #A0A0AB;
+      text-decoration: none;
+      font-size: 14px;
+      transition: var(--transition-smooth);
+    }
+
+    .footer-links a:hover {
+      color: var(--color-primary-red);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--color-black-light);
+      padding-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #71717A;
+    }
+
+    /* Reveal animation class */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    /* ---- Cortina de Transição de Página ---- */
+    .page-transition-curtain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--color-black);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      transform: translateY(0);
+    }
+
+    .page-transition-logo {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--color-white);
+      letter-spacing: 2px;
+      opacity: 0;
+      transform: translateY(20px);
+      font-family: var(--font-primary);
+    }
+
+    .page-transition-logo span {
+      color: var(--color-primary-red);
+    }
+
+    /* ---- Modal de Vídeo (Lightbox) ---- */
+    .video-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .video-modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .video-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 15, 17, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .video-modal-container {
+      position: relative;
+      width: 90%;
+      max-width: 960px;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      z-index: 2;
+      transform: scale(0.9);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .video-modal.active .video-modal-container {
+      transform: scale(1);
+    }
+
+    .video-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #FFF;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .video-modal-close:hover {
+      background: var(--color-primary-red);
+      border-color: var(--color-primary-red);
+      transform: rotate(90deg);
+    }
+
+    .video-modal-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-modal-content video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Cortina de Transição de Página -->
+  <div class="page-transition-curtain" id="transition-curtain">
+    <div class="page-transition-logo">FACCHINI<span>.EPI</span></div>
+  </div>
+
+  <div class="progress-bar" id="p-bar"></div>
+
+  <!-- ============================
+       HEADER
+  ============================= -->
+  <!-- ============================
+       HEADER
+  ============================= -->
+  <header id="header">
+    <a href="#" class="logo">FACCHINI<span>.EPI</span></a>
+    <ul class="nav-links">
+      <li><a href="#problema">Desafios</a></li>
+      <li><a href="#solucao">Solução</a></li>
+      <li><a href="#beneficios">Benefícios</a></li>
+      <li><a href="#cenario-nacional">Dados Reais</a></li>
+      <li><a href="#videos-demo">Demonstração</a></li>
+      <li><a href="demonstracoes.html" onclick="fetch('run_detector.php')">Câmeras Ao Vivo</a></li>
+    </ul>
+  </header>
+
+  <!-- ============================
+       HERO — Pinned scene
+       Left: Text | Right: Red panel with truck photo that expands left
+  ============================= -->
+  <div class="hero-wrapper" id="hero-wrapper">
+
+    <!-- LEFT — static text content -->
+    <div class="hero-left" id="hero-left">
+      <span class="hero-tag">Segurança do Trabalho Industrial</span>
+      <h1 class="hero-title">
+        Sistema Inteligente de<br>
+        <span>Monitoramento</span><br>
+        de EPIs
+      </h1>
+      <p class="hero-desc">
+        Centralize, rastreie e automatize a gestão de equipamentos de proteção individual da Facchini com total
+        conformidade legal e máxima eficiência operacional.
+      </p>
+
+      <div class="hero-btn-group">
+        <a href="#problema" class="btn-hero-primary">Conheça a Solução <span style="margin-left: 8px;">→</span></a>
+        <a href="#videos-demo" class="btn-hero-secondary">
+          Ver IA em Ação
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round"
+            style="margin-left: 6px; display: inline-block; vertical-align: middle;">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+        </a>
+      </div>
+
+      <div class="hero-features-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div class="hero-feature-item">
+          <div class="hero-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <div>
+            <div class="feature-title" style="font-size: 13px; font-weight: 700; color: var(--color-text-dark);">100%
+              Conformidade</div>
+            <div class="feature-sub" style="font-size: 11px; color: var(--color-text-muted);">NR-6 e eSocial</div>
+          </div>
+        </div>
+        <div class="hero-feature-item">
+          <div class="hero-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              <polyline points="17 6 23 6 23 12" />
+            </svg>
+          </div>
+          <div>
+            <div class="feature-title" style="font-size: 13px; font-weight: 700; color: var(--color-text-dark);">Gestão
+              em Tempo Real</div>
+            <div class="feature-sub" style="font-size: 11px; color: var(--color-text-muted);">Dados sempre atualizados
+            </div>
+          </div>
+        </div>
+        <div class="hero-feature-item">
+          <div class="hero-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <div>
+            <div class="feature-title" style="font-size: 13px; font-weight: 700; color: var(--color-text-dark);">
+              Segurança de Dados</div>
+            <div class="feature-sub" style="font-size: 11px; color: var(--color-text-muted);">Proteção e LGPD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT — Red panel (expands to the left on scroll) -->
+    <div class="hero-red-panel" id="hero-red-panel">
+
+      <!-- Particles layer -->
+      <div class="hero-particles" id="hero-particles"></div>
+
+      <!-- Truck photo inside the red area -->
+      <div class="hero-truck-img" id="hero-truck-img">
+        <div class="hero-carousel-slide active" style="background-image: url('img1.png');"></div>
+        <div class="hero-carousel-slide" style="background-image: url('img2.png');"></div>
+        <div class="hero-carousel-slide" style="background-image: url('img3.png');"></div>
+        <div class="hero-truck-fade"></div>
+      </div>
+
+      <!-- All text layers stacked in center of red panel -->
+      <div class="hero-text-layer" id="hero-text-layer">
+
+        <!-- Layer 1: FACCHINI (will be char-split by JS) -->
+        <div class="hero-brand-name" id="hero-brand-name"></div>
+
+        <!-- Layer 2: PROJETO EPI (will be char-split by JS) -->
+        <div class="hero-brand-name" id="hero-projeto" style="opacity:0;"></div>
+
+        <!-- Layer 3: O QUE É? -->
+        <div class="hero-question" id="hero-question">
+          <!-- Badge -->
+          <div class="hero-question-badge">Segurança do Trabalho 4.0</div>
+
+          <!-- Main title -->
+          O QUE É?
+
+          <!-- Subtitle -->
+          <div style="font-size: 17px; font-weight: 500; text-transform: none; color: rgba(255,255,255,0.65); letter-spacing: 1.5px; margin-top: 16px; font-family: var(--font-primary);">
+            Sistema Inteligente de Monitoramento em Tempo Real
+          </div>
+
+          <!-- Decorative line -->
+          <div class="hero-question-divider"></div>
+
+          <!-- Typewriter -->
+          <div style="margin-top: 20px; display: flex; justify-content: center;">
+            <span class="hero-typewriter" id="hero-typewriter">O que é o EPI?</span>
+          </div>
+
+          <!-- EPI full text block (2 columns) -->
+          <div class="hero-epi-text-block" id="hero-epi-text-block">
+            <p>O Sistema de Monitoramento e Auditoria de EPI em Tempo Real é uma plataforma tecnológica avançada que integra Visão Computacional, IA e tecnologias web para monitoramento contínuo do uso de EPIs em ambientes industriais.</p>
+            <p>O objetivo é identificar, em tempo real, a utilização correta de EPIs, com foco na detecção do uso de óculos de proteção, por meio de análise inteligente de imagens de câmeras de monitoramento.</p>
+            <p>Ao detectar uma não conformidade, o sistema gera alertas automáticos e envia notificações em tempo real para um painel web centralizado, permitindo ação imediata das equipes de Segurança do Trabalho.</p>
+            <p>A solução contribui para uma cultura de segurança mais robusta, reduzindo falhas humanas e fornecendo registros digitais para rastreabilidade e tomada de decisão baseada em dados.</p>
+          </div>
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+  <!-- Fixed arrow button to advance hero animation -->
+  <button id="hero-arrow-btn" title="Próximo">
+    <svg viewBox="0 0 24 24">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+
+
+
+  <!-- ============================
+       SECTION: Contexto
+  ============================= -->
+  <section id="contexto">
+    <div class="sec-header reveal">
+      <div class="sec-category">Contexto Industrial</div>
+      <h2 class="sec-title">A complexidade da segurança em ambientes de grande escala</h2>
+    </div>
+    <div class="grid-2">
+      <div class="reveal" style="font-size: 16px; line-height: 1.8; color: var(--color-text-muted);">
+        <p style="margin-bottom: 20px;">
+          Com linhas de montagem, soldagem, pintura e usinagem de alta performance, a <strong>Facchini</strong> lida com
+          um dos cenários operacionais mais dinâmicos do setor.
+        </p>
+        <p>
+          Garantir a conformidade rigorosa exigida pela <strong>NR06</strong> — desde o registro e fiscalização até a substituição adequada dos EPIs — é um desafio diário. Digitalizar e centralizar esse controle representa a linha de frente para proteger vidas e blindar a operação contra sinistros e passivos trabalhistas.
+        </p>
+      </div>
+      <div class="reveal" style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="card" style="border-left: 4px solid var(--color-primary-red);">
+          <div class="card-title">Segurança Proativa</div>
+          <div class="card-desc">Garantia em tempo real de que todos os operadores estejam utilizando os itens exigidos
+            pelas NRs de seus respectivos setores.</div>
+        </div>
+        <div class="card" style="border-left: 4px solid var(--color-primary-red);">
+          <div class="card-title">Rastreabilidade Absoluta</div>
+          <div class="card-desc">Substituição de fichas físicas por registros digitais perfeitamente auditáveis em conformidade com o eSocial(O Sistema de Escrituração Digital das Obrigações Fiscais, Previdenciárias e Trabalhistas).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Problema
+  ============================= -->
+  <section id="problema" style="background-color: #fff;">
+    <div class="sec-header reveal">
+      <div class="sec-category">Pontos de Dor</div>
+      <h2 class="sec-title">Os impasses da gestão manual de EPIs</h2>
+    </div>
+    <div class="grid-2">
+      <div class="reveal" style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="card problem-card">
+          <div class="card-title" style="color: var(--color-primary-red);">Dificuldade de Rastreamento</div>
+          <div class="card-desc">Históricos em arquivos físicos tornam a apuração de passivos trabalhistas extremamente
+            morosa e imprecisa.</div>
+        </div>
+      </div>
+      <div class="reveal" style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="card problem-card">
+          <div class="card-title" style="color: var(--color-primary-red);">Burocracia em Auditorias</div>
+          <div class="card-desc">Tempo valioso do SESMT(Serviços Especializados em Engenharia de Segurança e em Medicina do Trabalho) consumido com coleta de assinaturas físicas e organização de documentos legais.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Impactos
+  ============================= -->
+  <section id="impactos">
+    <div class="sec-header reveal">
+      <div class="sec-category">Impactos Críticos</div>
+      <h2 class="sec-title">O impacto direto no resultado corporativo</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal">
+        <div class="card-title" style="font-size: 18px; color: var(--color-primary-red);">Riscos Físicos</div>
+        <div class="card-desc" style="font-size: 13px;">Colaboradores expostos por EPIs desgastados ou danificados com certificado CA(Certificado de Aprovação).</div>
+      </div>
+      <div class="card reveal">
+        <div class="card-title" style="font-size: 18px; color: var(--color-primary-red);">Passivo Trabalhista</div>
+        <div class="card-desc" style="font-size: 13px;">Multas e processos gerados pela ausência de comprovação
+          documental de entregas e substituições.</div>
+      </div>
+      <div class="card reveal">
+        <div class="card-title" style="font-size: 18px; color: var(--color-primary-red);">Baixa Produtividade</div>
+        <div class="card-desc" style="font-size: 13px;">Atrasos e conferências manuais atrasam o início
+          dos turnos e desgastam a equipe de segurança.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Solução
+  ============================= -->
+  <section id="solucao" style="background-color: #fff;">
+    <div class="sec-header reveal">
+      <div class="sec-category">A Plataforma</div>
+      <h2 class="sec-title">Tecnologia avançada para a gestão de segurança</h2>
+    </div>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal" style="border-top: 3px solid var(--color-primary-red);">
+        <div class="card-title">Gestão Inteligente</div>
+        <div class="card-desc">Controle absoluto de prazos de validade e datas ideais de substituição com base no perfil
+          de desgaste de cada setor.</div>
+      </div>
+      <div class="card reveal" style="border-top: 3px solid var(--color-primary-red);">
+        <div class="card-title">Rastreabilidade Total</div>
+        <div class="card-desc">Histórico completo e inalterável de todas as movimentações e assinaturas digitais por
+          colaborador e por setor.</div>
+      </div>
+      <div class="card reveal" style="border-top: 3px solid var(--color-primary-red);">
+        <div class="card-title">Decisões com BI</div>
+        <div class="card-desc">Relatórios consolidados e dashboards intuitivos para otimização de custos e análise de
+          conformidade em tempo real.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Funcionalidades
+  ============================= -->
+  <section id="funcionalidades">
+    <div class="sec-header reveal">
+      <div class="sec-category">Recursos da Plataforma</div>
+      <h2 class="sec-title">Projetado para as demandas da indústria</h2>
+    </div>
+    <div class="grid-2">
+      <div class="card reveal">
+        <div class="card-title">Cadastro de Colaboradores</div>
+        <div class="card-desc">Associação inteligente de perfis operacionais com EPIs obrigatórios por função, setor e
+          norma aplicável.</div>
+      </div>
+      <div class="card reveal">
+        <div class="card-title">Assinatura Digital</div>
+        <div class="card-desc">Eliminação total das fichas em papel. O colaborador assina digitalmente no ato do recebimento ou via RFID(Identificação por Radiofrequência).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Inovação
+  ============================= -->
+  <section id="inovacao" style="background-color: #fff;">
+    <div class="sec-header reveal">
+      <div class="sec-category">Diferencial Inovador</div>
+      <h2 class="sec-title">Como a Facchini ganha inteligência preventiva</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal">
+        <div class="step-badge">01</div>
+        <div class="card-title">Processo Integrado</div>
+        <div class="card-desc">Da entrega ao eSocial, dados fluem sem retrabalho e com conformidade de 100%.</div>
+      </div>
+      <div class="card reveal">
+        <div class="step-badge">02</div>
+        <div class="card-title">Validação Instantânea</div>
+        <div class="card-desc">O sistema bloqueia automaticamente a liberação de EPIs incompatíveis com o cargo ou setor
+          do colaborador.</div>
+      </div>
+      <div class="card reveal">
+        <div class="step-badge">03</div>
+        <div class="card-title">Manutenção Preditiva</div>
+        <div class="card-desc">Alertas preditivos indicam necessidade de substituição antes do vencimento do CA ou
+          esgotamento físico.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Benefícios
+  ============================= -->
+  <section id="beneficios">
+    <div class="sec-header reveal">
+      <div class="sec-category">Retorno Comercial</div>
+      <h2 class="sec-title">Ganhos mensuráveis e imediatos para a Facchini</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal" style="border-left: 4px solid var(--color-primary-red);">
+        <span class="benefit-header-badge red">Segurança</span>
+        <div class="card-title">Prevenção Avançada</div>
+        <div class="card-desc">Redução drástica no risco de acidentes e garantia de uso constante dos EPIs corretos em
+          cada área produtiva.</div>
+      </div>
+      <div class="card reveal" style="border-left: 4px solid var(--color-black);">
+        <span class="benefit-header-badge black">Gestão</span>
+        <div class="card-title">Eficiência no SESMT</div>
+        <div class="card-desc">Redução de até 80% do tempo gasto em conferências, digitações e preparação de documentos
+          para auditorias.</div>
+      </div>
+      <div class="card reveal" style="border-left: 4px solid var(--color-black);">
+        <span class="benefit-header-badge black">Conformidade</span>
+        <div class="card-title">Blindagem Jurídica</div>
+        <div class="card-desc">Comprovação imediata de conformidade legal em fiscalizações externas e processos
+          trabalhistas.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Dados do Cenário Nacional
+  ============================= -->
+  <section id="cenario-nacional" style="background-color: #fff; border-bottom: 1px solid var(--color-border);">
+    <div class="sec-header reveal">
+      <div class="sec-category">Dados Reais do Brasil</div>
+      <h2 class="sec-title">O impacto dos acidentes de trabalho no cenário nacional</h2>
+    </div>
+
+    <div class="grid-3" style="margin-bottom: 50px;">
+      <!-- Stat 1: 2024 -->
+      <div class="card reveal" style="border-top: 4px solid var(--color-primary-red); text-align: center;">
+        <div style="font-size: 44px; font-weight: 800; color: var(--color-primary-red); margin-bottom: 10px;">724.228
+        </div>
+        <div class="card-title" style="font-size: 16px; margin-bottom: 10px;">Acidentes em 2024</div>
+        <div class="card-desc">Registros oficiais de acidentes de trabalho ocorridos no Brasil apenas no ano de 2024.
+        </div>
+      </div>
+
+      <!-- Stat 2: 2012-2024 -->
+      <div class="card reveal" style="border-top: 4px solid var(--color-black); text-align: center;">
+        <div style="font-size: 44px; font-weight: 800; color: var(--color-black); margin-bottom: 10px;">8.8 Milhões
+        </div>
+        <div class="card-title" style="font-size: 16px; margin-bottom: 10px;">Acidentes Acumulados</div>
+        <div class="card-desc">Aproximadamente 8,8 milhões de acidentes de trabalho registrados oficialmente entre 2012
+          e 2024.</div>
+      </div>
+
+      <!-- Stat 3: Mortes -->
+      <div class="card reveal" style="border-top: 4px solid var(--color-primary-red); text-align: center;">
+        <div style="font-size: 44px; font-weight: 800; color: var(--color-primary-red); margin-bottom: 10px;">32.000+
+        </div>
+        <div class="card-title" style="font-size: 16px; margin-bottom: 10px;">Mortes Ocupacionais</div>
+        <div class="card-desc">Mais de 32 mil mortes decorrentes de acidentes ou doenças relacionadas ao trabalho de
+          2012 a 2024.</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom: 60px; gap: 40px;">
+      <!-- +30% Card -->
+      <div class="card reveal"
+        style="border-left: 4px solid var(--color-primary-red); display: flex; flex-direction: column; justify-content: center; padding: 35px;">
+        <div style="font-size: 26px; font-weight: 800; color: var(--color-primary-red); margin-bottom: 12px;">+30% Risco
+          de Acidentes</div>
+        <p style="font-size: 14px; line-height: 1.6; color: var(--color-text-muted);">
+          "Como apontado por estudos divulgados por especialistas em Segurança do Trabalho, o uso inadequado de EPIs
+          pode aumentar em até 30% o risco de acidentes ocupacionais."
+        </p>
+      </div>
+
+      <!-- +60% Card -->
+      <div class="card reveal"
+        style="border-left: 4px solid var(--color-primary-red); display: flex; flex-direction: column; justify-content: center; padding: 35px;">
+        <div style="font-size: 26px; font-weight: 800; color: var(--color-primary-red); margin-bottom: 12px;">Até +60%
+          Risco de Acidentes Graves</div>
+        <p style="font-size: 14px; line-height: 1.6; color: var(--color-text-muted);">
+          "Estudos citados por profissionais da área de Segurança do Trabalho indicam que a ausência ou utilização
+          incorreta de EPIs pode elevar significativamente a ocorrência de acidentes graves."
+        </p>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap: 40px; align-items: center;">
+      <!-- Conseqüências -->
+      <div class="reveal">
+        <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; color: var(--color-text-dark);">Impactos dos
+          Acidentes</h3>
+        <ul style="list-style: none; display: grid; grid-template-columns: 1fr; gap: 14px;">
+          <li
+            style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--color-text-dark);">
+            <span style="color: var(--color-primary-red); font-size: 16px;">❌</span> Afastamentos e custos com ausência
+            de equipe
+          </li>
+          <li
+            style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--color-text-dark);">
+            <span style="color: var(--color-primary-red); font-size: 16px;">❌</span> Processos trabalhistas e passivos
+            jurídicos
+          </li>
+          <li
+            style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--color-text-dark);">
+            <span style="color: var(--color-primary-red); font-size: 16px;">❌</span> Multas administrativas do
+            Ministério do Trabalho
+          </li>
+          <li
+            style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--color-text-dark);">
+            <span style="color: var(--color-primary-red); font-size: 16px;">❌</span> Perda de produtividade operacional
+          </li>
+          <li
+            style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--color-text-dark);">
+            <span style="color: var(--color-primary-red); font-size: 16px;">❌</span> Custos previdenciários e
+            tributários adicionais
+          </li>
+          <li
+            style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--color-text-dark);">
+            <span style="color: var(--color-primary-red); font-size: 16px;">❌</span> Danos institucionais à reputação da
+            empresa
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sell EPI Guard (Exemplo 4) -->
+      <div class="card reveal"
+        style="background: var(--color-bg-light); border: 1px solid var(--color-border); padding: 35px; border-radius: 16px; height: 100%; display: flex; align-items: center;">
+        <p
+          style="font-size: 14px; line-height: 1.7; font-style: italic; color: var(--color-text-dark); font-weight: 500;">
+          "De acordo com dados do Ministério do Trabalho e da Previdência Social, os acidentes de trabalho continuam
+          representando um dos maiores desafios da indústria brasileira. A rastreabilidade e a fiscalização do uso
+          correto de EPIs são fatores fundamentais para reduzir riscos operacionais e fortalecer a conformidade legal."
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Vídeos de Demonstração
+  ============================= -->
+  <section id="videos-demo"
+    style="background-color: var(--color-bg-light); border-bottom: 1px solid var(--color-border); padding: 100px 8%;">
+    <div class="sec-header reveal" style="max-width: none;">
+      <div class="sec-category">Demonstração Visual</div>
+      <h2 class="sec-title">Demonstração prática de monitoramento da IA</h2>
+    </div>
+
+    <p class="reveal"
+      style="font-size: 15px; line-height: 1.8; color: var(--color-text-muted); max-width: 900px; margin-bottom: 40px;">
+      "Segundo o Ministério do Trabalho e Emprego e o Anuário Estatístico de Acidentes do Trabalho (AEAT), o Brasil
+      registra centenas de milhares de acidentes ocupacionais todos os anos, reforçando a importância do monitoramento
+      contínuo e da correta utilização dos Equipamentos de Proteção Individual."
+    </p>
+
+    <!-- Visual grid of video mockups -->
+    <div class="grid-3" style="gap: 24px;">
+      <!-- Video 1 -->
+      <div class="reveal" style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="card" data-video-src="https://drive.google.com/file/d/1Z1LkXCDGo-4bRmb2sydzGKjZcrWSovv-/view?usp=sharing"
+          style="padding: 0; overflow: hidden; border-radius: 12px; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; margin: 0;">
+          <div class="video-card-bg"
+            style="position: absolute; inset: 0; background-image: url('https://drive.google.com/thumbnail?id=1Z1LkXCDGo-4bRmb2sydzGKjZcrWSovv-&sz=w800'); background-size: cover; background-position: center; opacity: 0.5; transition: transform 0.4s ease, opacity 0.4s ease;">
+          </div>
+          <div class="video-play-btn"
+            style="z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: var(--color-primary-red); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(227, 28, 37, 0.4); transition: transform 0.3s ease;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </div>
+        </div>
+        <div
+          style="font-family: var(--font-primary); font-size: 14px; font-weight: 600; color: var(--color-text-dark); text-align: center; margin-top: 8px;">
+          01.Detecção de EPI</div>
+      </div>
+
+      <!-- Video 2 -->
+      <div class="reveal" style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="card" data-video-src="https://drive.google.com/file/d/1iTuxYjWzTC77Hke5rfJ1uuISwSw2y0Km/view?usp=sharing"
+          style="padding: 0; overflow: hidden; border-radius: 12px; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; margin: 0;">
+          <div class="video-card-bg"
+            style="position: absolute; inset: 0; background-image: url('https://drive.google.com/thumbnail?id=1iTuxYjWzTC77Hke5rfJ1uuISwSw2y0Km&sz=w800'); background-size: cover; background-position: center; opacity: 0.5; transition: transform 0.4s ease, opacity 0.4s ease;">
+          </div>
+          <div class="video-play-btn"
+            style="z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: var(--color-primary-red); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(227, 28, 37, 0.4); transition: transform 0.3s ease;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </div>
+        </div>
+        <div
+          style="font-family: var(--font-primary); font-size: 14px; font-weight: 600; color: var(--color-text-dark); text-align: center; margin-top: 8px;">
+          02.Detecção de EPI</div>
+      </div>
+
+      <!-- Video 3 -->
+      <div class="reveal" style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="card" data-video-src="https://drive.google.com/file/d/11JieWSC_A43WG0Ywm97k8HD-KsQi7-PB/view?usp=sharing"
+          style="padding: 0; overflow: hidden; border-radius: 12px; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; margin: 0;">
+          <div class="video-card-bg"
+            style="position: absolute; inset: 0; background-image: url('_capa/thumb_video3.jpg'); background-size: cover; background-position: center; opacity: 0.5; transition: transform 0.4s ease, opacity 0.4s ease;">
+          </div>
+          <div class="video-play-btn"
+            style="z-index: 2; width: 44px; height: 44px; border-radius: 50%; background: var(--color-primary-red); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(227, 28, 37, 0.4); transition: transform 0.3s ease;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </div>
+        </div>
+        <div
+          style="font-family: var(--font-primary); font-size: 14px; font-weight: 600; color: var(--color-text-dark); text-align: center; margin-top: 8px;">
+          03.Detecção de EPI</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       SECTION: Quote
+  ============================= -->
+  <section class="quote-section">
+    <div class="quote-content reveal">
+      "Nosso projeto não é apenas um sistema de controle. Ele é uma ferramenta estratégica que auxilia a Facchini na
+      proteção de seus colaboradores, na redução de custos operacionais e no fortalecimento dos processos de segurança e
+      conformidade."
+    </div>
+    <div class="quote-author reveal">— SISTEMA INTELIGENTE DE MONITORAMENTO DE EPIs</div>
+  </section>
+
+  <!-- ============================
+       SECTION: Créditos
+  ============================= -->
+  <section id="creditos"
+    style="background-color: #fff; border-top: 1px solid var(--color-border); padding: 80px 8%; text-align: center;">
+    <div class="sec-header reveal" style="margin: 0 auto 30px auto; max-width: 600px;">
+      <div class="sec-category">Créditos</div>
+      <h2 class="sec-title">Quem fez acontecer</h2>
+    </div>
+
+    <button id="btn-toggle-creditos" class="btn-hero-secondary"
+      style="font-family: inherit; font-size: 14px; font-weight: 700; padding: 14px 28px; cursor: pointer; border-radius: 30px; display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--color-primary-red); color: var(--color-primary-red); transition: all 0.3s ease; background: transparent;">
+      <span>Exibir Créditos do Projeto</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+        stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s ease;">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+
+    <div id="creditos-content"
+      style="max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease; margin-top: 30px; text-align: left;">
+      <div class="card"
+        style="background: var(--color-bg-light); border: 1px solid var(--color-border); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+        <p
+          style="font-size: 16px; line-height: 1.8; color: var(--color-text-dark); font-weight: 600; margin-bottom: 30px; border-bottom: 2px solid var(--color-primary-red); padding-bottom: 15px; display: inline-block;">
+          Muito obrigado a todos os envolvidos da turma TDS 2025! Esse projeto só existe por conta de alguns nomes que
+          merecem ser reconhecidos:
+        </p>
+
+        <div class="grid-4" style="gap: 20px;">
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              AT</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Arthur Tadeu Rodrigues
+              Carvalho</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              BR</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Beatriz Rios</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              GS</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Gideão dos Santos</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              JP</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">João Pedro Garcia
+              Pereira</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              JF</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Josué Francisco coraspe
+              graterol</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              VH</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Vitor Hugo Segna
+              Rocha</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              PB</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Pietra Bezerra
+              Ferreira</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              RG</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Ruan da Silva Gomes</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              RT</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Ruan Torres Latorre</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              MG</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Matheus Gonçalves
+              Benevides</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              JP</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">João Pedro de Paulo
+              Guedes</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              JR</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">João Pedro Rodrigues da
+              Silva</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              KV</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Kauã Vitor Reis</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              RA</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Rafael Adriano Oliveira da
+              Silva</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              NE</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Nahyron Eduardo Marques de
+              Jesus</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              LV</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Lais Vitória Oliveira
+              Pareira</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              IP</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Ian Piloto Sanches</span>
+          </div>
+          <div class="credito-item"
+            style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-radius: 12px; border: 1px solid var(--color-border);">
+            <div
+              style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-black); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              MC</div>
+            <span style="font-weight: 700; color: var(--color-text-dark); font-size: 14px;">Miguel Casteletti
+              Rosa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       FOOTER
+  ============================= -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="logo">FACCHINI<span>.EPI</span></div>
+        <p class="footer-desc">Tecnologia inteligente para gestão e rastreabilidade total de Equipamentos de Proteção
+          Individual em ambientes fabris de grande porte.</p>
+      </div>
+      <div>
+        <h4 class="footer-title">Links rápidos</h4>
+        <ul class="footer-links">
+          <li><a href="#contexto">Contexto</a></li>
+          <li><a href="#problema">Desafios</a></li>
+          <li><a href="#solucao">Plataforma</a></li>
+          <li><a href="#beneficios">Benefícios</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Institucional</h4>
+        <p style="font-size:13px;color:#A0A0AB;line-height:1.7;">Desenvolvido como proposta exclusiva para a Facchini
+          S.A. Implementos Rodoviários.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Sistema de Monitoramento de EPIs. Todos os direitos reservados.</p>
+      <p>Termos de Uso | Políticas de Privacidade</p>
+    </div>
+  </footer>
+
+  <!-- Modal de Vídeo (Lightbox) -->
+  <div id="video-modal" class="video-modal" style="display: none;">
+    <div class="video-modal-backdrop"></div>
+    <div class="video-modal-container">
+      <button class="video-modal-close" id="btn-close-modal">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="video-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SCRIPTS — GSAP Animations
+  ============================= -->
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Scroll Progress bar
+    gsap.to("#p-bar", {
+      width: "100%",
+      ease: "none",
+      scrollTrigger: {
+        trigger: "body",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: true
+      }
+    });
+
+    // Header transparent → frosted on scroll
+    ScrollTrigger.create({
+      start: "top -60",
+      onToggle: self => {
+        document.getElementById("header").classList.toggle("scrolled", self.isActive);
+      }
+    });
+
+    // =============================================
+    // HERO TYPEWRITER + PINNED SCROLL TIMELINE
+    // =============================================
+
+    // ---- Helper: split text into individual char <span>s ----
+    function buildCharSpans(elementId, text) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = '';
+      text.split('').forEach(ch => {
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = ch === ' ' ? '\u00A0' : ch;
+        span.style.opacity = '0';
+        span.style.display = 'inline-block';
+        el.appendChild(span);
+      });
+      return el.querySelectorAll('.char');
+    }
+
+    // Build char spans for FACCHINI and PROJETO EPI
+    const facchiniChars = buildCharSpans('hero-brand-name', 'FACCHINI');
+    const projetoChars = buildCharSpans('hero-projeto', 'PROJETO EPI');
+
+    // ---- Description words ----
+    const descText = 'O Projeto EPI é um sistema inteligente de monitoramento que utiliza Inteligência Artificial e Visão Computacional para identificar em tempo real o uso correto e incorreto de EPIs, tendo como objetivo principal aumentar a segurança e a conformidade no ambiente de trabalho.';
+    const descWords = descText.split(' ');
+
+    // =============================================
+    // BUILD PINNED GSAP TIMELINE
+    // =============================================
+    const heroTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: '#hero-wrapper',
+        start: 'top top',
+        end: '+=450%',   // Shortened scroll duration
+        scrub: 1.2,
+        pin: true,
+        anticipatePin: 1,
+      }
+    });
+
+    // ---- Phase 1: red panel sweeps left → full screen ----
+    heroTl.to('#hero-red-panel', {
+      left: '0%', width: '100%',
+      ease: 'power2.inOut', duration: 1.5
+    });
+    heroTl.to('#hero-left', {
+      opacity: 0, x: -40,
+      ease: 'power2.in', duration: 0.8
+    }, '<');
+
+    // ---- Phase 2a: truck image fades OUT ----
+    heroTl.to('#hero-truck-img', {
+      opacity: 0, ease: 'power1.inOut', duration: 0.8
+    });
+
+    // ---- Phase 2b: text layer fades IN ----
+    heroTl.to('#hero-text-layer', {
+      opacity: 1, ease: 'power2.out', duration: 0.5
+    }, '<0.3');
+
+    // ---- Phase 2c: TYPE FACCHINI char by char ----
+    heroTl.to('#hero-brand-name', { opacity: 1, duration: 0.01 });
+    facchiniChars.forEach(ch => {
+      heroTl.to(ch, { opacity: 1, duration: 0.12, ease: 'none' });
+    });
+
+    // Pause on FACCHINI
+    heroTl.to({}, { duration: 0.6 });
+    // Label: checkpoint "facchini" for arrow navigation
+    heroTl.addLabel('facchini');
+
+    // ---- Phase 3: ERASE FACCHINI (right to left) ----
+    [...facchiniChars].reverse().forEach(ch => {
+      heroTl.to(ch, { opacity: 0, duration: 0.08, ease: 'none' });
+    });
+    heroTl.to('#hero-brand-name', { opacity: 0, duration: 0.01 });
+
+    // Short pause between words
+    heroTl.to({}, { duration: 0.2 });
+
+    // ---- Phase 4: TYPE PROJETO EPI char by char ----
+    heroTl.to('#hero-projeto', { opacity: 1, duration: 0.01 });
+    projetoChars.forEach(ch => {
+      heroTl.to(ch, { opacity: 1, duration: 0.1, ease: 'none' });
+    });
+
+    // Pause on PROJETO EPI
+    heroTl.to({}, { duration: 0.6 });
+    // Label: checkpoint "projeto" for arrow navigation
+    heroTl.addLabel('projeto');
+
+    // ---- Phase 5: ERASE PROJETO EPI (right to left) ----
+    [...projetoChars].reverse().forEach(ch => {
+      heroTl.to(ch, { opacity: 0, duration: 0.08, ease: 'none' });
+    });
+    heroTl.to('#hero-projeto', { opacity: 0, duration: 0.01 });
+
+    heroTl.to({}, { duration: 0.2 });
+
+    // ---- Phase 6: O QUE É? appears with scale punch ----
+    heroTl.fromTo('#hero-question',
+      { opacity: 0, scale: 0.6 },
+      {
+        opacity: 1, scale: 1, ease: 'back.out(1.7)', duration: 0.8,
+        onStart: () => {
+          // Restart typewriter animation
+          const tw = document.getElementById('hero-typewriter');
+          if (tw) {
+            tw.classList.remove('typing');
+            void tw.offsetWidth; // force reflow
+            tw.classList.add('typing');
+          }
+        }
+      }
+    );
+    // Label: checkpoint "question" for arrow navigation
+    heroTl.addLabel('question');
+
+    // After typewriter finishes (~1.2s), fade in the EPI text block
+    heroTl.to('#hero-epi-text-block', {
+      opacity: 1, y: 0, ease: 'power2.out', duration: 0.6
+    }, '+=1.2');
+    heroTl.addLabel('desc');
+
+    // Pause to allow reading the text
+    heroTl.to({}, { duration: 1.5 });
+    // Label: checkpoint "end" - last position before red drains
+    heroTl.addLabel('end');
+
+    // ---- Phase 7: Slowly drain red → white ----
+    // Fade out the O QUE É? block first
+    heroTl.to('#hero-question', { opacity: 0, y: -20, ease: 'power1.in', duration: 0.8 });
+
+    // Then bleed red away slowly
+    heroTl.to('#hero-red-panel', {
+      backgroundColor: '#ffffff',
+      ease: 'none',
+      duration: 2.0
+    }, '<0.2');
+
+    // =============================================
+    // Section reveal animations
+    // =============================================
+    document.querySelectorAll(".reveal").forEach((el) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1, y: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 85%",
+            toggleActions: "play none none none"
+          }
+        }
+      );
+    });
+
+    // =============================================
+    // ARROW BUTTON — manual step through hero animation
+    // Checkpoints: start → facchini → projeto → question → desc → (loops to start)
+    // =============================================
+    (function setupArrowButton() {
+      const btn = document.getElementById('hero-arrow-btn');
+      // We define progress-based checkpoints (0.0 – 1.0 range of the timeline)
+      // These are evaluated after the timeline is fully built.
+      const CHECKPOINTS = [
+        0,           // 0: beginning (before panel sweeps)
+        'facchini',  // 1: after FACCHINI typed
+        'projeto',   // 2: after PROJETO EPI typed
+        'question',  // 3: O QUE É? visible
+        'desc',      // 4: description block visible
+      ];
+
+      // Add labels for facchini and projeto phases
+      // (Labels were added inline above for question/desc/end)
+      // We need to resolve label times AFTER timeline is built:
+      let checkIdx = 0;
+
+      btn.addEventListener('click', () => {
+        // Advance to next checkpoint index
+        checkIdx = (checkIdx + 1) % CHECKPOINTS.length;
+        const target = CHECKPOINTS[checkIdx];
+
+        // Get the scroll position that corresponds to this timeline progress
+        const st = heroTl.scrollTrigger;
+        let targetProgress;
+
+        if (typeof target === 'number') {
+          targetProgress = target;
+        } else {
+          // Get label time as fraction of total duration
+          const labelTime = heroTl.labels[target];
+          targetProgress = labelTime / heroTl.totalDuration();
+        }
+
+        // Clamp between 0 and 1
+        targetProgress = Math.max(0, Math.min(1, targetProgress));
+
+        // Convert timeline progress to scroll position
+        const scrollStart = st.start;
+        const scrollEnd = st.end;
+        const targetScroll = scrollStart + targetProgress * (scrollEnd - scrollStart);
+
+        // Smoothly scroll to that position slower using GSAP
+        gsap.to(window, { scrollTo: targetScroll, duration: 2.2, ease: "power2.inOut" });
+
+        // Rotate arrow icon to signal direction
+        const svg = btn.querySelector('svg');
+        svg.style.transform = checkIdx === 0 ? 'rotate(180deg)' : 'rotate(0deg)';
+      });
+    })();
+
+    // Add missing labels BEFORE the timeline runs (inline labels added above)
+    // facchini and projeto labels are added right after their build loops:
+    // (They were not labelled above — we need to patch the timeline order)
+    // Instead we store progress snapshots after timeline is fully constructed:
+    // This is handled by the label insertions above (question, desc, end labels).
+
+
+
+    // Hero Carousel Auto rotation
+    (function setupHeroCarousel() {
+      const slides = document.querySelectorAll('.hero-carousel-slide');
+      if (slides.length === 0) return;
+      let currentIdx = 0;
+      setInterval(() => {
+        slides[currentIdx].classList.remove('active');
+        currentIdx = (currentIdx + 1) % slides.length;
+        slides[currentIdx].classList.add('active');
+      }, 4000);
+    })();
+
+    // Red panel floating particles
+    (function setupParticles() {
+      const container = document.getElementById('hero-particles');
+      if (!container) return;
+      const count = 18;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'hero-particle';
+        const size = Math.random() * 60 + 20;
+        const left = Math.random() * 100;
+        const delay = Math.random() * 12;
+        const duration = Math.random() * 10 + 10;
+        p.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${left}%;
+          bottom: -${size}px;
+          animation-duration: ${duration}s;
+          animation-delay: -${delay}s;
+          opacity: ${Math.random() * 0.07 + 0.03};
+        `;
+        container.appendChild(p);
+      }
+    })();
+
+    // Toggle Créditos Section
+    (function setupCreditsToggle() {
+      const btn = document.getElementById('btn-toggle-creditos');
+      const content = document.getElementById('creditos-content');
+      if (!btn || !content) return;
+
+      btn.addEventListener('click', () => {
+        const isExpanded = content.style.maxHeight && content.style.maxHeight !== '0px';
+        const svg = btn.querySelector('svg');
+        const span = btn.querySelector('span');
+
+        if (isExpanded) {
+          content.style.maxHeight = '0px';
+          content.style.opacity = '0';
+          svg.style.transform = 'rotate(0deg)';
+          span.textContent = 'Exibir Créditos do Projeto';
+          btn.style.backgroundColor = 'transparent';
+          btn.style.color = 'var(--color-primary-red)';
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.style.opacity = '1';
+          svg.style.transform = 'rotate(180deg)';
+          span.textContent = 'Ocultar Créditos do Projeto';
+          btn.style.backgroundColor = 'var(--color-primary-red)';
+          btn.style.color = '#fff';
+        }
+      });
+    })();
+
+
+
+    // Dynamic Active Nav Links on Scroll
+    const sections = document.querySelectorAll('section, .hero-wrapper');
+    const links = document.querySelectorAll('.nav-links a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (window.pageYOffset >= sectionTop - 120) {
+          current = section.getAttribute('id') || '';
+        }
+      });
+
+      links.forEach(link => {
+        link.classList.remove('active');
+        const href = link.getAttribute('href').substring(1);
+        if (href === current || (current === 'hero-wrapper' && href === 'problema')) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Configuração de Transição de Páginas com GSAP
+    (function setupPageTransitions() {
+      const curtain = document.getElementById('transition-curtain');
+      const logo = curtain ? curtain.querySelector('.page-transition-logo') : null;
+
+      if (!curtain || !logo) return;
+
+      // 1. Animação de Entrada (Page Load)
+      gsap.set(curtain, { y: "0%", pointerEvents: "all" });
+      gsap.set(logo, { opacity: 0, y: 20 });
+
+      const loadTl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(curtain, { pointerEvents: "none" });
+        }
+      });
+
+      loadTl.to(logo, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" })
+        .to(logo, { opacity: 0, y: -20, duration: 0.3, delay: 0.1, ease: "power2.in" })
+        .to(curtain, { y: "100%", duration: 0.6, ease: "power3.inOut" });
+
+      // 2. Intercepção de Cliques em Links
+      const links = document.querySelectorAll('a');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href');
+
+          if (!href) return;
+          if (href.startsWith('#') || href.startsWith('javascript:')) return;
+          if (link.getAttribute('target') === '_blank') return;
+
+          const currentFilename = window.location.pathname.split('/').pop() || 'index.html';
+          const targetFilename = href.split('#')[0];
+
+          // Se for navegar para outra página interna
+          if (targetFilename && targetFilename !== currentFilename) {
+            e.preventDefault();
+
+            gsap.set(curtain, { pointerEvents: "all" });
+
+            const exitTl = gsap.timeline({
+              onComplete: () => {
+                window.location.href = href;
+              }
+            });
+
+            gsap.set(curtain, { y: "100%" });
+            exitTl.to(curtain, { y: "0%", duration: 0.6, ease: "power3.inOut" })
+              .to(logo, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" });
+          }
+        });
+      });
+    })();
+
+    // Video Modal Lightbox
+    (function setupVideoModal() {
+      const modal = document.getElementById('video-modal');
+      const modalContent = modal ? modal.querySelector('.video-modal-content') : null;
+      const closeBtn = document.getElementById('btn-close-modal');
+      const backdrop = modal ? modal.querySelector('.video-modal-backdrop') : null;
+
+      if (!modal || !modalContent) return;
+
+      // Select all video cards in the #videos-demo section
+      const videoCards = document.querySelectorAll('#videos-demo .card');
+
+      videoCards.forEach(card => {
+        // Make card look clickable
+        card.style.cursor = 'pointer';
+
+        // Add hover effects
+        card.addEventListener('mouseenter', () => {
+          gsap.to(card.querySelector('.video-play-btn'), { scale: 1.15, duration: 0.3 });
+          gsap.to(card.querySelector('.video-card-bg'), { scale: 1.05, opacity: 0.7, duration: 0.4 });
+        });
+        card.addEventListener('mouseleave', () => {
+          gsap.to(card.querySelector('.video-play-btn'), { scale: 1, duration: 0.3 });
+          gsap.to(card.querySelector('.video-card-bg'), { scale: 1, opacity: 0.5, duration: 0.4 });
+        });
+
+        card.addEventListener('click', () => {
+          // Show modal
+          modal.style.display = 'flex';
+          setTimeout(() => {
+            modal.classList.add('active');
+          }, 10);
+
+          const videoSrc = card.getAttribute('data-video-src');
+          if (videoSrc && videoSrc.includes('drive.google.com')) {
+            // Extrai o ID do arquivo do Google Drive
+            const driveRegex = /\/file\/d\/([a-zA-Z0-9_-]+)/;
+            const match = videoSrc.match(driveRegex);
+            if (match && match[1]) {
+              const videoId = match[1];
+              const iframeUrl = `https://drive.google.com/file/d/${videoId}/preview`;
+              modalContent.innerHTML = `<iframe src="${iframeUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width: 100%; height: 100%; border: none; border-radius: 12px; background: #000;"></iframe>`;
+            } else {
+              modalContent.innerHTML = `<div style="width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; color: #a1a1aa; font-family: var(--font-primary); font-size: 16px; font-weight: 600;">Link do vídeo inválido</div>`;
+            }
+          } else if (videoSrc) {
+            modalContent.innerHTML = `
+              <video id="modal-video-player" controls width="100%" height="auto" style="width: 100%; height: 100%; border-radius: 12px; background: #000;">
+                <source src="${videoSrc}" type="video/mp4">
+                Seu navegador não suporta a reprodução de vídeos.
+              </video>
+            `;
+            const videoPlayer = document.getElementById('modal-video-player');
+            if (videoPlayer) {
+              videoPlayer.currentTime = 0;
+              videoPlayer.play().catch(err => console.log("Erro ao reproduzir vídeo:", err));
+            }
+          } else {
+            // Player preto/sem vídeo (Card 3)
+            modalContent.innerHTML = `<div style="width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; color: #a1a1aa; font-family: var(--font-primary); font-size: 16px; font-weight: 600;">03. Em processamento / Indisponível</div>`;
+          }
+        });
+      });
+
+      function closeModal() {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        setTimeout(() => {
+          modal.style.display = 'none';
+        }, 400);
+      }
+
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (backdrop) backdrop.addEventListener('click', closeModal);
+
+      // Close on ESC
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>

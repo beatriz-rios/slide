@@ -1,0 +1,11 @@
+Modelo YOLO carregado com sucesso.
+Câmera funcional encontrada no índice 0 (DSHOW)
+Threads de captura e IA iniciadas.
+ * Serving Flask app 'detector_web'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.108:5000
+Press CTRL+C to quit
+127.0.0.1 - - [14/Jun/2026 19:20:27] "GET /video_feed?t=1781475626091 HTTP/1.1" 200 -

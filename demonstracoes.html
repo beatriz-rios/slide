@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demonstrações em Cenário Real - Facchini.EPI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --color-primary-red: #E31C25;
+      --color-red-dark: #A81017;
+      --color-red-glow: rgba(227, 28, 37, 0.1);
+      --color-black: #0F0F11;
+      --color-black-light: #1E1E22;
+      --color-bg-light: #FAFAFA;
+      --color-card-bg: #FFFFFF;
+      --color-text-dark: #121214;
+      --color-text-muted: #555860;
+      --color-white: #FFFFFF;
+      --color-border: #EAEAEA;
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-bg-light);
+      color: var(--color-text-dark);
+      overflow-x: hidden;
+      padding-top: 90px;
+    }
+
+    /* ---- Header ---- */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px 8%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--color-border);
+      transition: var(--transition-smooth);
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 22px;
+      color: #121214;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--color-primary-red);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--color-primary-red);
+    }
+
+    .btn-cta {
+      background-color: var(--color-primary-red);
+      color: var(--color-white);
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: var(--transition-smooth);
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(227, 28, 37, 0.25);
+    }
+
+    .btn-cta:hover {
+      background-color: var(--color-red-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(227, 28, 37, 0.35);
+    }
+
+    /* ---- Main Section ---- */
+    .demo-hero {
+      padding: 80px 8% 40px 8%;
+      text-align: center;
+      background: radial-gradient(circle at 50% 100%, rgba(227, 28, 37, 0.03) 0%, rgba(255, 255, 255, 0) 70%);
+    }
+
+    .demo-tag {
+      display: inline-block;
+      padding: 6px 14px;
+      background-color: var(--color-red-glow);
+      color: var(--color-primary-red);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .demo-title {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--color-text-dark);
+      margin-bottom: 15px;
+      letter-spacing: -1px;
+    }
+
+    .demo-desc {
+      font-size: 16px;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+    }
+
+    /* ---- Tabs Container ---- */
+    .tabs-container {
+      max-width: 1200px;
+      margin: 0 auto 100px auto;
+      padding: 0 4%;
+    }
+
+    .tabs-nav {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .tab-btn {
+      padding: 14px 28px;
+      border: 1px solid var(--color-border);
+      background: var(--color-white);
+      color: var(--color-text-dark);
+      font-weight: 700;
+      font-size: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+      transition: var(--transition-smooth);
+    }
+
+    .tab-btn:hover {
+      border-color: var(--color-primary-red);
+      color: var(--color-primary-red);
+    }
+
+    .tab-btn.active {
+      background: var(--color-primary-red);
+      color: var(--color-white);
+      border-color: var(--color-primary-red);
+      box-shadow: 0 6px 20px rgba(227, 28, 37, 0.25);
+    }
+
+    /* ---- Tab Content Grid ---- */
+    .tab-content {
+      display: none;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 40px;
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.02);
+    }
+
+    .tab-content.active {
+      display: grid;
+    }
+
+    /* Left Side: Photo Frame */
+    .scenario-photo-box {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      aspect-ratio: 4 / 3;
+      background: #111;
+      display: flex;
+    }
+
+    .scenario-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .camera-hud {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      color: #FFFFFF;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .rec-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 4px 10px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    .rec-dot {
+      width: 8px;
+      height: 8px;
+      background: #EF4444;
+      border-radius: 50%;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.3;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* Right Side: Logs Terminal */
+    .scenario-logs-box {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .scenario-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--color-text-dark);
+      margin-bottom: 8px;
+    }
+
+    .scenario-location {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-primary-red);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .terminal-container {
+      background: #121214;
+      border-radius: 14px;
+      flex-grow: 1;
+      padding: 20px;
+      font-family: var(--font-mono);
+      color: #a0a0ab;
+      font-size: 12px;
+      line-height: 1.6;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow-y: auto;
+      max-height: 260px;
+      border: 1px solid #27272a;
+    }
+
+    .terminal-line {
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+
+    .terminal-line .timestamp {
+      color: #52525b;
+      margin-right: 8px;
+    }
+
+    .terminal-line .status-ok {
+      color: #10B981;
+      font-weight: 600;
+    }
+
+    .terminal-line .status-alert {
+      color: #EF4444;
+      font-weight: 600;
+      animation: alert-flash 1s infinite alternate;
+    }
+
+    @keyframes alert-flash {
+      0% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .simulation-ctrl {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-simulate {
+      flex-grow: 1;
+      padding: 14px;
+      background: var(--color-black);
+      color: var(--color-white);
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-simulate:hover {
+      background: var(--color-primary-red);
+      box-shadow: 0 4px 14px rgba(227, 28, 37, 0.25);
+    }
+
+    /* ---- Footer ---- */
+    footer {
+      background-color: var(--color-black);
+      color: var(--color-white);
+      padding: 80px 8% 40px 8%;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 50px;
+      margin-bottom: 50px;
+    }
+
+    .footer-desc {
+      color: #A0A0AB;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-top: 15px;
+      max-width: 350px;
+    }
+
+    .footer-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--color-white);
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 12px;
+    }
+
+    .footer-links a {
+      color: #A0A0AB;
+      text-decoration: none;
+      font-size: 14px;
+      transition: var(--transition-smooth);
+    }
+
+    .footer-links a:hover {
+      color: var(--color-primary-red);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--color-black-light);
+      padding-top: 30px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; color: #71717A;
+    }
+
+    /* ---- Bounding Boxes (Visão Computacional) ---- */
+    .ai-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 8;
+    }
+    .bbox {
+      position: absolute;
+      border: 2px solid #10B981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+      pointer-events: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .bbox-label {
+      position: absolute;
+      top: -19px; left: -2px;
+      background: #10B981;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 4px 4px 0 0;
+      white-space: nowrap;
+      font-weight: 700;
+      text-transform: uppercase;
+      transition: background-color 0.3s;
+    }
+    .bbox.alert-state {
+      border-color: #EF4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+      animation: alert-pulse 1s infinite alternate;
+    }
+    .bbox.alert-state .bbox-label {
+      background: #EF4444;
+    }
+    @keyframes alert-pulse {
+      0% { opacity: 0.85; }
+      100% { opacity: 1; }
+    }
+
+    /* ---- Cortina de Transição de Página ---- */
+    .page-transition-curtain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--color-black);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      transform: translateY(0);
+    }
+
+    .page-transition-logo {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--color-white);
+      letter-spacing: 2px;
+      opacity: 0;
+      transform: translateY(20px);
+      font-family: var(--font-primary);
+    }
+
+    .page-transition-logo span {
+      color: var(--color-primary-red);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cortina de Transição de Página -->
+  <div class="page-transition-curtain" id="transition-curtain">
+    <div class="page-transition-logo">FACCHINI<span>.EPI</span></div>
+  </div>
+
+  <!-- ============================
+       HEADER
+  ============================= -->
+  <header id="header">
+    <a href="index.html" class="logo">FACCHINI<span>.EPI</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html#problema">Desafios</a></li>
+      <li><a href="index.html#solucao">Solução</a></li>
+      <li><a href="index.html#beneficios">Benefícios</a></li>
+      <li><a href="index.html#cenario-nacional">Dados Reais</a></li>
+      <li><a href="index.html#videos-demo">Demonstração</a></li>
+      <li><a href="#" class="active" onclick="startDetector(event)">Câmeras Ao Vivo</a></li>
+    </ul>
+  </header>
+
+  <!-- ============================
+       DEMO HERO
+  ============================= -->
+  <section class="demo-hero">
+    <span class="demo-tag">Ambiente em Produção</span>
+    <h1 class="demo-title">Demonstrações em Cenário Real</h1>
+    <p class="demo-desc">
+      Acompanhe em tempo real o processamento da Visão Computacional do EPIGuard identificando, analisando e notificando
+      desvios nos ambientes industriais da Facchini.
+    </p>
+  </section>
+
+  <!-- ============================
+       TABS SECTION
+  ============================= -->
+  <section class="tabs-container">
+    <!-- Scenario 4: Live Feed (Somente Câmera) -->
+    <div id="live-tab" class="tab-content active" style="grid-template-columns: 1fr; padding: 20px;">
+      <div class="scenario-photo-box" id="camera-container" style="display: flex; justify-content: center; align-items: center; background: #000; position: relative; max-height: 70vh; box-shadow: 0 15px 35px rgba(227, 28, 37, 0.15); border: 2px solid var(--color-black-light);">
+        <button onclick="toggleFullScreen()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-weight: bold; backdrop-filter: blur(4px); transition: all 0.2s;" onmouseover="this.style.background='var(--color-primary-red)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">
+          ⛶ Tela Cheia
+        </button>
+        <!-- MJPEG Stream via Flask na porta 5000 -->
+        <img id="live-stream-img" src="" alt="Câmera Ao Vivo (Iniciando...)" style="width: 100%; height: 100%; object-fit: contain;">
+        <div class="camera-hud">
+          <div class="rec-badge">
+            <div class="rec-dot"></div>REC LIVE_STREAM
+          </div>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 40px; padding-bottom: 20px;">
+        <a href="IA_apresentacao/index.html" class="btn-cta" style="font-size: 16px; padding: 15px 40px;">
+          Acessar Painel da IA (Histórico de Detecções)
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       FOOTER
+  ============================= -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="logo">FACCHINI<span>.EPI</span></div>
+        <p class="footer-desc">Tecnologia inteligente para gestão e rastreabilidade total de Equipamentos de Proteção
+          Individual em ambientes fabris de grande porte.</p>
+      </div>
+      <div>
+        <h4 class="footer-title">Links rápidos</h4>
+        <ul class="footer-links">
+          <li><a href="index.html#contexto">Contexto</a></li>
+          <li><a href="index.html#problema">Desafios</a></li>
+          <li><a href="index.html#solucao">Plataforma</a></li>
+          <li><a href="index.html#beneficios">Benefícios</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Institucional</h4>
+        <p style="font-size:13px;color:#A0A0AB;line-height:1.7;">Desenvolvido como proposta exclusiva para a Facchini
+          S.A. Implementos Rodoviários.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Sistema de Monitoramento de EPIs. Todos os direitos reservados.</p>
+      <p>Termos de Uso | Políticas de Privacidade</p>
+    </div>
+  </footer>
+
+  <script>
+    // ---- Auto-start ao entrar na página ----
+    let _pollTimer = null;
+
+    function startDetector(evt) {
+      if (evt) evt.preventDefault();
+
+      const img = document.getElementById('live-stream-img');
+      if (img) img.alt = "Conectando à câmera...";
+
+      // Pedir ao PHP para iniciar o servidor Python (se ainda não estiver rodando)
+      fetch('run_detector.php').catch(() => {});
+
+      // Tentar conectar imediatamente e a cada 500ms
+      if (_pollTimer) clearInterval(_pollTimer);
+      let attempts = 0;
+
+      function tryConnect() {
+        attempts++;
+        const testImg = new Image();
+        testImg.onload = () => {
+          if (img) img.src = testImg.src;
+          if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+        };
+        testImg.src = "http://127.0.0.1:5000/video_feed?t=" + new Date().getTime();
+        if (attempts > 60) { // Para depois de 30 segundos
+          if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+        }
+      }
+
+      tryConnect(); // Tentativa imediata
+      _pollTimer = setInterval(tryConnect, 500);
+    }
+
+    // Iniciar automaticamente ao carregar a página
+    window.addEventListener('DOMContentLoaded', () => startDetector(null));
+
+    // ---- Desligar ao sair da página ----
+    function shutdownDetector() {
+      if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+      // sendBeacon é confiável mesmo ao fechar a aba
+      try { navigator.sendBeacon('http://127.0.0.1:5000/shutdown'); } catch(e) {}
+      // Limpar a imagem para não ficar travada
+      const img = document.getElementById('live-stream-img');
+      if (img) img.src = '';
+    }
+
+    window.addEventListener('beforeunload', shutdownDetector);
+    window.addEventListener('pagehide', shutdownDetector);
+
+    function switchTab(evt, tabId) {
+      const tabContents = document.querySelectorAll('.tab-content');
+      const tabButtons = document.querySelectorAll('.tab-btn');
+
+      tabContents.forEach(content => content.classList.remove('active'));
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      evt.currentTarget.classList.add('active');
+
+      gsap.fromTo(`#${tabId}`,
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
+      );
+    }
+
+    function simulateAlert(type) {
+      const containerId = 'logs-' + type;
+      const container = document.getElementById(containerId);
+      const timeStr = new Date().toLocaleTimeString('pt-BR');
+
+      let alertText = '';
+      let actionText = '';
+      let bboxId = '';
+      let bboxLabelText = '';
+      let bboxNormalText = '';
+
+      if (type === 'weld') {
+        alertText = 'ALERTA: Ausência de Luvas de Raspa na Soldagem!';
+        actionText = 'Ação: Alerta visual enviado ao painel do soldador.';
+        bboxId = 'weld-gloves';
+        bboxLabelText = 'SEM LUVA [ALERTA]';
+        bboxNormalText = 'LUVAS RASPA [OK]';
+      } else if (type === 'assm') {
+        alertText = 'ALERTA: Operador detectado sem óculos de proteção!';
+        actionText = 'Ação: Registro do desvio efetuado no eSocial.';
+        bboxId = 'assm-glasses';
+        bboxLabelText = 'SEM ÓCULOS [ALERTA]';
+        bboxNormalText = 'ÓCULOS [OK]';
+      } else if (type === 'paint') {
+        alertText = 'ALERTA: Respirador inadequado detectado na pintura!';
+        actionText = 'Ação: Notificação instantânea enviada ao SESMT.';
+        bboxId = 'paint-respirator';
+        bboxLabelText = 'RESPIRADOR [ALERTA]';
+        bboxNormalText = 'RESPIRADOR [OK]';
+      }
+
+      // Alterna a classe de alerta e o texto na caixa correspondente
+      const bboxEl = document.getElementById(bboxId);
+      if (bboxEl) {
+        bboxEl.classList.add('alert-state');
+        const labelEl = bboxEl.querySelector('.bbox-label');
+        if (labelEl) {
+          labelEl.textContent = bboxLabelText;
+        }
+
+        // Restaura ao estado normal após 6 segundos
+        setTimeout(() => {
+          bboxEl.classList.remove('alert-state');
+          if (labelEl) {
+            labelEl.textContent = bboxNormalText;
+          }
+        }, 6000);
+      }
+
+      // Add Alert Lines
+      const lineAlert = document.createElement('div');
+      lineAlert.className = 'terminal-line';
+      lineAlert.innerHTML = `<span class="timestamp">[${timeStr}]</span> <span class="status-alert">${alertText}</span>`;
+      container.appendChild(lineAlert);
+
+      setTimeout(() => {
+        const lineAction = document.createElement('div');
+        lineAction.className = 'terminal-line';
+        lineAction.innerHTML = `<span class="timestamp">[${timeStr}]</span> <span class="status-ok">REACTION</span>: ${actionText}`;
+        container.appendChild(lineAction);
+        container.scrollTop = container.scrollHeight;
+      }, 800);
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Configuração de Transição de Páginas com GSAP
+    (function setupPageTransitions() {
+      const curtain = document.getElementById('transition-curtain');
+      const logo = curtain ? curtain.querySelector('.page-transition-logo') : null;
+
+      if (!curtain || !logo) return;
+
+      // 1. Animação de Entrada (Page Load)
+      gsap.set(curtain, { y: "0%", pointerEvents: "all" });
+      gsap.set(logo, { opacity: 0, y: 20 });
+
+      const loadTl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(curtain, { pointerEvents: "none" });
+        }
+      });
+
+      loadTl.to(logo, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" })
+        .to(logo, { opacity: 0, y: -20, duration: 0.3, delay: 0.1, ease: "power2.in" })
+        .to(curtain, { y: "100%", duration: 0.6, ease: "power3.inOut" });
+
+      // 2. Intercepção de Cliques em Links
+      const links = document.querySelectorAll('a');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href');
+
+          if (!href) return;
+          if (href.startsWith('#') || href.startsWith('javascript:')) return;
+          if (link.getAttribute('target') === '_blank') return;
+
+          const currentFilename = window.location.pathname.split('/').pop() || 'index.html';
+          const targetFilename = href.split('#')[0];
+
+          // Se for navegar para outra página interna
+          if (targetFilename && targetFilename !== currentFilename) {
+            e.preventDefault();
+
+            // Desligar a câmera antes de navegar
+            shutdownDetector();
+
+            gsap.set(curtain, { pointerEvents: "all" });
+
+            const exitTl = gsap.timeline({
+              onComplete: () => {
+                window.location.href = href;
+              }
+            });
+
+            gsap.set(curtain, { y: "100%" });
+            exitTl.to(curtain, { y: "0%", duration: 0.6, ease: "power3.inOut" })
+              .to(logo, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" });
+          }
+        });
+      });
+    })();
+    // Fullscreen toggle
+    function toggleFullScreen() {
+      const container = document.getElementById('camera-container');
+      if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) { /* Safari */
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) { /* IE11 */
+          container.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+  </script>
+</body>
+
+</html>

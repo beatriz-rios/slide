@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACCHINI.EPI | Histórico de Ocorrências</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header style="padding: 24px 8%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid #EAEAEA; display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; position: sticky; top: 0; z-index: 100;">
+        <div style="font-weight: 800; font-size: 22px; color: #121214;">FACCHINI<span style="color: #E31C25;">.EPI</span></div>
+        <a href="../demonstracoes.html" style="background-color: #121214; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px;">⬅ Voltar para Câmeras</a>
+    </header>
+    <div class="dashboard">
+        <div class="main-content">
+            <div class="table-header">
+                <div>
+                    <h2>Histórico de Ocorrências</h2>
+                    <div class="live-indicator" style="margin-top: 0.5rem;">
+                        <span class="pulse-dot"></span>
+                        MONITORAMENTO ATIVO
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="theme-toggle" style="background: rgba(227, 28, 37, 0.1); color: #E31C25; border-color: #E31C25;" onclick="if(confirm('Deseja apagar todas as fotos e o histórico?')){ fetch('clear_history.php').then(()=>fetchHistory()); fetch('http://127.0.0.1:5000/clear_history').catch(()=>{}); }">🗑️ Limpar Histórico</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Imagem</th>
+                        <th>Horário</th>
+                        <th>Classe</th>
+                        <th>Confiança</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="detections-body">
+                    <!-- Preenchido via JavaScript -->
+                </tbody>
+            </table>
+            <div id="pagination" style="text-align: center; margin-top: 1.5rem; display: none;">
+                <button class="theme-toggle" onclick="showAllRecords()" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); border-color: var(--primary);">📥 Mostrar Tudo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" onclick="this.style.display='none'">
+        <img id="modal-img" src="" alt="Ampliado">
+    </div>
+
+    <script>
+        let showAll = false;
+
+        function showAllRecords() {
+            showAll = true;
+            document.getElementById('pagination').style.display = 'none';
+            fetchHistory();
+        }
+
+        // Theme toggle removed for cohesive Facchini design
+
+        function openModal(src, isInfraction) {
+            const modal = document.getElementById('modal');
+            const img = document.getElementById('modal-img');
+            img.src = src;
+            
+            if (isInfraction) modal.classList.add('infraction-view');
+            else modal.classList.remove('infraction-view');
+            
+            modal.style.display = 'flex';
+        }
+
+        async function fetchHistory() {
+            try {
+                let data;
+                let flaskOnline = false;
+
+                // Tentar buscar do Flask primeiro (servidor da IA)
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/history?' + new Date().getTime());
+                    if (response.ok) {
+                        data = await response.json();
+                        flaskOnline = true;
+                    }
+                } catch(e) {}
+
+                // Fallback: ler history.json diretamente via XAMPP
+                if (!data) {
+                    try {
+                        const fallback = await fetch('history.json?' + new Date().getTime());
+                        if (fallback.ok) data = await fallback.json();
+                    } catch(e) {}
+                }
+
+                if (!data || !Array.isArray(data)) return;
+
+                const tbody = document.getElementById('detections-body');
+                const pagination = document.getElementById('pagination');
+
+                let html = '';
+                const recordsToShow = showAll ? data : data.slice(0, 20);
+
+                if (!showAll && data.length > 20) {
+                    pagination.style.display = 'block';
+                } else {
+                    pagination.style.display = 'none';
+                }
+
+                recordsToShow.forEach(det => {
+                    const isCom = det.tipo === 'Oculos EPI';
+                    // Base URL para imagens: Flask se online, senão via XAMPP
+                    const imgBase = flaskOnline ? 'http://127.0.0.1:5000/captures/' : '../captures/';
+                    html += `
+                        <tr class="${!isCom ? 'infraction-row' : ''}">
+                            <td><img src="${imgBase}${det.imagem}" class="thumbnail" onclick="openModal('${imgBase}${det.imagem}', ${!isCom})"></td>
+                            <td>${det.data} às ${det.hora}</td>
+                            <td><span class="badge ${isCom ? 'badge-ok' : 'badge-alert'}">${det.tipo}</span></td>
+                            <td>${det.confianca}</td>
+                            <td>
+                                <span class="badge ${isCom ? 'badge-com' : 'badge-sem'}">
+                                    <span class="dot"></span>${isCom ? 'Protegido' : 'Em Risco'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error('Erro ao buscar histórico:', error);
+            }
+        }
+
+        setInterval(fetchHistory, 1000);
+        fetchHistory();
+
+    </script>
+</body>
+</html>
