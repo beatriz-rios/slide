@@ -8,4 +8,5 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:5000
  * Running on http://192.168.1.104:5000
 Press CTRL+C to quit
-127.0.0.1 - - [15/Jun/2026 19:48:40] "GET /video_feed?1781563720305 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2026 20:30:53] "GET /video_feed?1781566253783 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2026 20:31:12] "GET /history?1781566272017 HTTP/1.1" 200 -

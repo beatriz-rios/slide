@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import time
 import os
 import json
@@ -19,9 +20,12 @@ app = Flask(__name__)
 CORS(app)
 
 # YOLO
-IMG_SIZE = 640          # Tamanho padrão para melhor precisão do YOLO (era 416)
-CONF_THRESHOLD = 0.55
-JPEG_QUALITY = 90       # Qualidade JPEG maior para melhor visualização (era 70)
+IMG_SIZE = 320          # Menor = inferência mais rápida na CPU
+CONF_THRESHOLD = 0.50
+JPEG_QUALITY = 70       # Menor = encoding mais rápido
+CAM_WIDTH = 640         # Resolução menor = tudo mais leve
+CAM_HEIGHT = 480
+SMOOTH_FACTOR = 0.45    # Suavização das boxes (0 = sem suavização, 1 = sem movimento)
 
 COLORS = {
     'Oculos EPI': (0, 255, 0),
@@ -47,8 +51,8 @@ class Detector:
         for i in range(5):
             cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
             if cap.isOpened():
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
                 ret, frame = cap.read()
                 if ret and frame is not None:
                     print(f"Câmera funcional encontrada no índice {i} (DSHOW)")
@@ -58,8 +62,8 @@ class Detector:
         for i in range(5):
             cap = cv2.VideoCapture(i)
             if cap.isOpened():
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
                 ret, frame = cap.read()
                 if ret and frame is not None:
                     print(f"Câmera funcional encontrada no índice {i} (Padrão)")
@@ -71,7 +75,7 @@ class Detector:
     def __init__(self):
         # Modelo
         try:
-            self.model = YOLO(MODEL_PATH)
+            self.model = YOLO(MODEL_PATH, task='detect')
             print("Modelo YOLO carregado com sucesso.")
         except Exception as e:
             print(f"Erro ao carregar modelo: {e}")
@@ -80,8 +84,8 @@ class Detector:
         # Câmera
         self.cap = self._find_camera()
         if self.cap:
-            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
             self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             self.cap.set(cv2.CAP_PROP_FPS, 30)
 
@@ -91,8 +95,9 @@ class Detector:
         self._display_frame = None      # Frame com overlay da IA (pronto para stream)
         self._running = True
 
-        # Detecções (para overlay)
-        self._detections = []           # Lista de (x1,y1,x2,y2,label,conf,color)
+        # Boxes suavizadas (interpolação linear)
+        self._smooth_boxes = []       # Lista de [x1, y1, x2, y2, label, conf, color]
+        self._target_boxes = []       # Alvo das boxes vindo da IA
 
         # Histórico
         self.last_save_time = 0
@@ -130,6 +135,35 @@ class Detector:
             pass
 
     # ----------------------------------------------------------
+    # Interpolar boxes suavemente em direção ao alvo
+    # ----------------------------------------------------------
+    def _lerp_boxes(self):
+        """Interpola as boxes atuais em direção às boxes-alvo da IA."""
+        targets = self._target_boxes
+
+        if not targets:
+            # Se a IA não detectou nada, desvanecer as boxes existentes
+            self._smooth_boxes = []
+            return
+
+        # Se a quantidade mudou, resetar direto
+        if len(self._smooth_boxes) != len(targets):
+            self._smooth_boxes = [list(t) for t in targets]
+            return
+
+        # Interpolar coordenadas suavemente
+        alpha = SMOOTH_FACTOR
+        for i in range(len(self._smooth_boxes)):
+            for j in range(4):  # x1, y1, x2, y2
+                self._smooth_boxes[i][j] = int(
+                    self._smooth_boxes[i][j] * alpha + targets[i][j] * (1 - alpha)
+                )
+            # Atualizar label, conf e color do alvo
+            self._smooth_boxes[i][4] = targets[i][4]
+            self._smooth_boxes[i][5] = targets[i][5]
+            self._smooth_boxes[i][6] = targets[i][6]
+
+    # ----------------------------------------------------------
     # Thread 1: Captura de câmera (roda a ~30fps)
     # ----------------------------------------------------------
     def _capture_loop(self):
@@ -137,8 +171,8 @@ class Detector:
             if self.cap is None or not self.cap.isOpened():
                 self.cap = self._find_camera()
                 if self.cap:
-                    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-                    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
+                    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
                     self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                 else:
                     time.sleep(1)
@@ -151,22 +185,21 @@ class Detector:
                 time.sleep(0.5)
                 continue
 
-            frame = cv2.resize(frame, (1280, 720))
+            frame = cv2.resize(frame, (CAM_WIDTH, CAM_HEIGHT))
 
-            # Desenhar overlay das últimas detecções da IA no frame
-            display = frame.copy()
-            with self._lock:
-                dets = list(self._detections)
+            # Interpolar e desenhar boxes suavizadas
+            self._lerp_boxes()
 
-            for (x1, y1, x2, y2, label, conf, color) in dets:
-                cv2.rectangle(display, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(display, f"{label}",
+            for box in self._smooth_boxes:
+                x1, y1, x2, y2, label, conf, color = box
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                cv2.putText(frame, f"{label}",
                             (x1, max(y1 - 10, 0)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
             with self._lock:
-                self._raw_frame = frame
-                self._display_frame = display
+                self._raw_frame = frame.copy()
+                self._display_frame = frame
 
     # ----------------------------------------------------------
     # Thread 2: IA / YOLO (roda a cada ~150ms)
@@ -180,16 +213,16 @@ class Detector:
                 time.sleep(0.1)
                 continue
 
-            # Rodar detecção
-            results = self.model.track(
-                frame, persist=True, imgsz=IMG_SIZE,
+            # Rodar detecção (predict é mais leve que track na CPU)
+            results = self.model.predict(
+                frame, imgsz=IMG_SIZE,
                 conf=CONF_THRESHOLD, verbose=False
             )
 
             new_dets = []
             new_entries = []
             current_time = time.time()
-            can_save = (current_time - self.last_save_time) >= 3.0
+            can_save = (current_time - self.last_save_time) >= 60.0
 
             for result in results:
                 if result.boxes is None:
@@ -217,9 +250,8 @@ class Detector:
                             "imagem": filename
                         })
 
-            # Atualizar detecções compartilhadas
-            with self._lock:
-                self._detections = new_dets
+            # Enviar novas detecções para a suavização
+            self._target_boxes = [list(d) for d in new_dets]
 
             # Salvar histórico
             if new_entries and can_save:
@@ -228,8 +260,7 @@ class Detector:
                     self.full_history.insert(0, entry)
                 self._save_history()
 
-            # Pequena pausa para não sobrecarregar a CPU
-            time.sleep(0.05)
+            # Sem pausa — rodar o mais rápido possível
 
     # ----------------------------------------------------------
     # Gerador MJPEG para o Flask (stream fluido)
@@ -250,8 +281,8 @@ class Detector:
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
-            # ~30 fps de streaming
-            time.sleep(0.033)
+            # Streaming rápido sem delay fixo
+            time.sleep(0.016)
 
     # ----------------------------------------------------------
     # Desligar tudo (câmera + threads)
