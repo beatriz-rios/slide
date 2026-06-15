@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 1rem;">
-                    <button class="theme-toggle" style="background: rgba(227, 28, 37, 0.1); color: #E31C25; border-color: #E31C25;" onclick="if(confirm('Deseja apagar todas as fotos e o histórico?')){ fetch('clear_history.php').then(()=>fetchHistory()); fetch('http://127.0.0.1:5000/clear_history').catch(()=>{}); }">🗑️ Limpar Histórico</button>
+                    <button class="theme-toggle" style="background: rgba(227, 28, 37, 0.1); color: #E31C25; border-color: #E31C25;" onclick="if(confirm('Deseja apagar todas as fotos e o histórico?')){ clearHistoryIndexedDB().then(()=>fetchHistory()); fetch('clear_history.php').then(()=>fetchHistory()); fetch('http://127.0.0.1:5000/clear_history').catch(()=>{}); }">🗑️ Limpar Histórico</button>
                 </div>
             </div>
             <table>
@@ -73,22 +73,82 @@
             modal.style.display = 'flex';
         }
 
+        // ---- Configuração do Banco de Dados IndexedDB ----
+        const DB_NAME = "EpiGuardDB";
+        const STORE_NAME = "detections";
+
+        function initDB() {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+              }
+            };
+            request.onsuccess = (e) => resolve(e.target.result);
+            request.onerror = (e) => reject(e.target.error);
+          });
+        }
+
+        function getHistoryFromIndexedDB() {
+          return initDB().then(db => {
+            return new Promise((resolve, reject) => {
+              const tx = db.transaction([STORE_NAME], "readonly");
+              const store = tx.objectStore(STORE_NAME);
+              const req = store.getAll();
+              req.onsuccess = () => {
+                const res = req.result || [];
+                res.reverse(); // Mais recente primeiro
+                resolve(res);
+              };
+              req.onerror = () => reject(req.error);
+            });
+          });
+        }
+
+        function clearHistoryIndexedDB() {
+          return initDB().then(db => {
+            return new Promise((resolve, reject) => {
+              const tx = db.transaction([STORE_NAME], "readwrite");
+              const store = tx.objectStore(STORE_NAME);
+              const req = store.clear();
+              req.onsuccess = () => resolve(true);
+              req.onerror = () => reject(req.error);
+            });
+          });
+        }
+
         async function fetchHistory() {
             try {
-                let data;
+                let data = [];
                 let flaskOnline = false;
+                let fromIndexedDB = false;
 
-                // Tentar buscar do Flask primeiro (servidor da IA)
+                // 1. Tentar carregar do IndexedDB primeiro
                 try {
-                    const response = await fetch('http://127.0.0.1:5000/history?' + new Date().getTime());
-                    if (response.ok) {
-                        data = await response.json();
-                        flaskOnline = true;
+                    const localData = await getHistoryFromIndexedDB();
+                    if (localData && localData.length > 0) {
+                        data = localData;
+                        fromIndexedDB = true;
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.error("Erro ao ler do IndexedDB:", e);
+                }
 
-                // Fallback: ler history.json diretamente via XAMPP
-                if (!data) {
+                // 2. Fallback para Flask (se não houver IndexedDB ou estiver vazio)
+                if (data.length === 0) {
+                    try {
+                        const response = await fetch('http://127.0.0.1:5000/history?' + new Date().getTime());
+                        if (response.ok) {
+                            data = await response.json();
+                            flaskOnline = true;
+                        }
+                    } catch(e) {}
+                }
+
+                // 3. Fallback para history.json estático
+                if (data.length === 0) {
                     try {
                         const fallback = await fetch('history.json?' + new Date().getTime());
                         if (fallback.ok) data = await fallback.json();
@@ -111,11 +171,17 @@
 
                 recordsToShow.forEach(det => {
                     const isCom = det.tipo === 'Oculos EPI';
-                    // Base URL para imagens: Flask se online, senão via XAMPP
-                    const imgBase = flaskOnline ? 'http://127.0.0.1:5000/captures/' : '../captures/';
+                    // Base URL para imagens
+                    let imgPath = '';
+                    if (fromIndexedDB || det.imagem.startsWith('data:')) {
+                        imgPath = det.imagem; // Já é base64
+                    } else {
+                        imgPath = (flaskOnline ? 'http://127.0.0.1:5000/captures/' : '../captures/') + det.imagem;
+                    }
+
                     html += `
                         <tr class="${!isCom ? 'infraction-row' : ''}">
-                            <td><img src="${imgBase}${det.imagem}" class="thumbnail" onclick="openModal('${imgBase}${det.imagem}', ${!isCom})"></td>
+                            <td><img src="${imgPath}" class="thumbnail" onclick="openModal('${imgPath}', ${!isCom})"></td>
                             <td>${det.data} às ${det.hora}</td>
                             <td><span class="badge ${isCom ? 'badge-ok' : 'badge-alert'}">${det.tipo}</span></td>
                             <td>
