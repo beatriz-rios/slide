@@ -645,7 +645,8 @@
       try {
         if (loading) loading.textContent = "Configurando ONNX Runtime Web...";
 
-        // Configurar para usar backend WASM sem threads (mais compatível)
+        // Configurar caminho explícito dos arquivos WASM (necessário quando usando CDN)
+        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/';
         ort.env.wasm.numThreads = 1;
         ort.env.wasm.simd = true;
 
@@ -654,7 +655,7 @@
         // Buscar o modelo como ArrayBuffer para evitar problemas de path/CORS
         const modelResponse = await fetch('IA_apresentacao/best.onnx');
         if (!modelResponse.ok) {
-          throw new Error(`Modelo não encontrado (HTTP ${modelResponse.status}). Verifique se o arquivo best.onnx existe.`);
+          throw new Error(`Modelo não encontrado (HTTP ${modelResponse.status}).`);
         }
         const modelBuffer = await modelResponse.arrayBuffer();
         
@@ -667,12 +668,12 @@
         };
         ortSession = await ort.InferenceSession.create(modelBuffer, sessionOptions);
 
-        // Verificar o nome real da entrada do modelo
         console.log("Modelo ONNX carregado com sucesso!");
         console.log("Entradas:", ortSession.inputNames);
         console.log("Saídas:", ortSession.outputNames);
 
         if (loading) loading.textContent = "Modelo carregado! Iniciando câmera...";
+        return true;
       } catch (err) {
         console.error("Erro ao carregar o modelo ONNX:", err);
         if (loading) {
@@ -680,6 +681,7 @@
           loading.textContent = `Erro ao carregar IA: ${err.message}`;
         }
         ortSession = null;
+        return false;
       }
     }
 
@@ -954,7 +956,7 @@
     }
 
     // ---- Auto-start ao entrar na página ----
-    function startDetector(evt) {
+    async function startDetector(evt) {
       if (evt) evt.preventDefault();
 
       const loading = document.getElementById('camera-loading');
@@ -964,11 +966,13 @@
       }
 
       if (!ortSession) {
-        initModel().then(() => {
-          startWebcam();
-        });
+        const success = await initModel();
+        if (success) {
+          await startWebcam();
+        }
+        // Se falhou, a mensagem de erro já foi exibida por initModel
       } else {
-        startWebcam();
+        await startWebcam();
       }
     }
 
