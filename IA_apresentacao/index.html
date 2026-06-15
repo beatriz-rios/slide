@@ -12,7 +12,7 @@
 <body>
     <header style="padding: 24px 8%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid #EAEAEA; display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; position: sticky; top: 0; z-index: 100;">
         <div style="font-weight: 800; font-size: 22px; color: #121214;">FACCHINI<span style="color: #E31C25;">.EPI</span></div>
-        <a href="../demonstracoes.html" style="background-color: #121214; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px;">⬅ Voltar para Câmeras</a>
+        <a href="../index.html#cameras" style="background-color: #121214; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='#E31C25'" onmouseout="this.style.background='#121214'">⬅ Voltar para Câmeras</a>
     </header>
     <div class="dashboard">
         <div class="main-content">
@@ -34,7 +34,6 @@
                         <th>Imagem</th>
                         <th>Horário</th>
                         <th>Classe</th>
-                        <th>Confiança</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -119,7 +118,6 @@
                             <td><img src="${imgBase}${det.imagem}" class="thumbnail" onclick="openModal('${imgBase}${det.imagem}', ${!isCom})"></td>
                             <td>${det.data} às ${det.hora}</td>
                             <td><span class="badge ${isCom ? 'badge-ok' : 'badge-alert'}">${det.tipo}</span></td>
-                            <td>${det.confianca}</td>
                             <td>
                                 <span class="badge ${isCom ? 'badge-com' : 'badge-sem'}">
                                     <span class="dot"></span>${isCom ? 'Protegido' : 'Em Risco'}

@@ -160,7 +160,7 @@ class Detector:
 
             for (x1, y1, x2, y2, label, conf, color) in dets:
                 cv2.rectangle(display, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(display, f"{label} {conf*100:.0f}%",
+                cv2.putText(display, f"{label}",
                             (x1, max(y1 - 10, 0)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
 
