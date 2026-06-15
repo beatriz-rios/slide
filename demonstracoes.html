@@ -641,22 +641,58 @@
     const hiddenCtx = hiddenCanvas.getContext('2d');
 
     async function initModel() {
+      const loading = document.getElementById('camera-loading');
       try {
-        const loading = document.getElementById('camera-loading');
-        if (loading) loading.textContent = "Carregando modelo de IA (best.onnx)...";
-        // Inicializar a sessão do ONNX Runtime Web
-        ortSession = await ort.InferenceSession.create('IA_apresentacao/best.onnx');
+        if (loading) loading.textContent = "Configurando ONNX Runtime Web...";
+
+        // Configurar para usar backend WASM sem threads (mais compatível)
+        ort.env.wasm.numThreads = 1;
+        ort.env.wasm.simd = true;
+
+        if (loading) loading.textContent = "Baixando modelo de IA (best.onnx ~12MB)...";
+
+        // Buscar o modelo como ArrayBuffer para evitar problemas de path/CORS
+        const modelResponse = await fetch('IA_apresentacao/best.onnx');
+        if (!modelResponse.ok) {
+          throw new Error(`Modelo não encontrado (HTTP ${modelResponse.status}). Verifique se o arquivo best.onnx existe.`);
+        }
+        const modelBuffer = await modelResponse.arrayBuffer();
+        
+        if (loading) loading.textContent = "Inicializando sessão de IA...";
+
+        // Criar sessão ONNX a partir do ArrayBuffer
+        const sessionOptions = {
+          executionProviders: ['wasm'],
+          graphOptimizationLevel: 'all'
+        };
+        ortSession = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+
+        // Verificar o nome real da entrada do modelo
+        console.log("Modelo ONNX carregado com sucesso!");
+        console.log("Entradas:", ortSession.inputNames);
+        console.log("Saídas:", ortSession.outputNames);
+
         if (loading) loading.textContent = "Modelo carregado! Iniciando câmera...";
       } catch (err) {
         console.error("Erro ao carregar o modelo ONNX:", err);
-        const loading = document.getElementById('camera-loading');
-        if (loading) loading.textContent = "Erro ao carregar o modelo de IA. Verifique se o arquivo best.onnx existe na pasta IA_apresentacao.";
+        if (loading) {
+          loading.style.fontSize = '14px';
+          loading.textContent = `Erro ao carregar IA: ${err.message}`;
+        }
+        ortSession = null;
       }
     }
 
     async function startWebcam() {
       const video = document.getElementById('webcam-video');
       const loading = document.getElementById('camera-loading');
+      
+      // Se o modelo não carregou, não inicia a câmera
+      if (!ortSession) {
+        if (loading) loading.textContent = "Não foi possível iniciar: modelo de IA não carregado.";
+        return;
+      }
+      
       try {
         webcamStream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -760,8 +796,11 @@
       const inputTensor = new ort.Tensor('float32', float32Array, [1, 3, 640, 640]);
       
       try {
-        // 3. Rodar inferência
-        const outputs = await ortSession.run({ images: inputTensor });
+        // 3. Rodar inferência (usar nome dinâmico da entrada do modelo)
+        const inputName = ortSession.inputNames[0];
+        const feeds = {};
+        feeds[inputName] = inputTensor;
+        const outputs = await ortSession.run(feeds);
         const outputName = ortSession.outputNames[0];
         const outputTensor = outputs[outputName];
         const outputData = outputTensor.data;
