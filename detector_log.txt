@@ -6,6 +6,9 @@ Threads de captura e IA iniciadas.
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
- * Running on http://192.168.0.108:5000
+ * Running on http://10.91.131.42:5000
 Press CTRL+C to quit
-127.0.0.1 - - [14/Jun/2026 19:20:27] "GET /video_feed?t=1781475626091 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2026 08:13:57] "GET /video_feed?t=1781522035518 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2026 08:13:57] "GET /video_feed?t=1781522036015 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2026 08:13:57] "GET /video_feed?t=1781522036518 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2026 08:13:57] "GET /video_feed?t=1781522037012 HTTP/1.1" 200 -
