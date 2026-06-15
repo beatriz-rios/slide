@@ -11,6 +11,7 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/ort.min.js"></script>
 
   <style>
     :root {
@@ -544,8 +545,11 @@
         <button onclick="toggleFullScreen()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-weight: bold; backdrop-filter: blur(4px); transition: all 0.2s;" onmouseover="this.style.background='var(--color-primary-red)'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">
           ⛶ Tela Cheia
         </button>
-        <!-- MJPEG Stream via Flask na porta 5000 -->
-        <img id="live-stream-img" src="" alt="Câmera Ao Vivo (Iniciando...)" style="width: 100%; height: 100%; object-fit: contain;">
+        <!-- Video element to capture the webcam stream silently -->
+        <video id="webcam-video" autoplay playsinline muted style="display: none;"></video>
+        <!-- Canvas to render the frames with predictions -->
+        <canvas id="output-canvas" style="width: 100%; height: 100%; object-fit: contain; max-height: 70vh;"></canvas>
+        <div id="camera-loading" style="position: absolute; color: white; font-weight: bold; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;">Iniciando Câmera e IA...</div>
         <div class="camera-hud">
           <div class="rec-badge">
             <div class="rec-dot"></div>REC LIVE_STREAM
@@ -592,37 +596,341 @@
   </footer>
 
   <script>
-    // ---- Auto-start ao entrar na página ----
-    let _pollTimer = null;
+    // ---- Configuração do Banco de Dados IndexedDB ----
+    const DB_NAME = "EpiGuardDB";
+    const STORE_NAME = "detections";
 
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+          }
+        };
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    function saveDetection(det) {
+      return initDB().then(db => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction([STORE_NAME], "readwrite");
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.add(det);
+          req.onsuccess = () => resolve(true);
+          req.onerror = () => reject(req.error);
+        });
+      });
+    }
+
+    // ---- Loop de Inferência YOLOv8 ONNX ----
+    let ortSession = null;
+    let webcamStream = null;
+    let isCamRunning = false;
+    let currentDetections = [];
+    let lastInferenceTime = 0;
+    let lastSaveTime = 0;
+    const INFERENCE_INTERVAL = 150; // milissegundos (~6.6 FPS de IA)
+
+    const hiddenCanvas = document.createElement('canvas');
+    hiddenCanvas.width = 640;
+    hiddenCanvas.height = 640;
+    const hiddenCtx = hiddenCanvas.getContext('2d');
+
+    async function initModel() {
+      try {
+        const loading = document.getElementById('camera-loading');
+        if (loading) loading.textContent = "Carregando modelo de IA (best.onnx)...";
+        // Inicializar a sessão do ONNX Runtime Web
+        ortSession = await ort.InferenceSession.create('IA_apresentacao/best.onnx');
+        if (loading) loading.textContent = "Modelo carregado! Iniciando câmera...";
+      } catch (err) {
+        console.error("Erro ao carregar o modelo ONNX:", err);
+        const loading = document.getElementById('camera-loading');
+        if (loading) loading.textContent = "Erro ao carregar o modelo de IA. Verifique se o arquivo best.onnx existe na pasta IA_apresentacao.";
+      }
+    }
+
+    async function startWebcam() {
+      const video = document.getElementById('webcam-video');
+      const loading = document.getElementById('camera-loading');
+      try {
+        webcamStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "user"
+          },
+          audio: false
+        });
+        video.srcObject = webcamStream;
+        await new Promise((resolve) => {
+          video.onloadedmetadata = () => {
+            video.play();
+            resolve();
+          };
+        });
+        isCamRunning = true;
+        if (loading) loading.style.display = 'none';
+        
+        // Iniciar loops de desenho e inferência
+        requestAnimationFrame(drawLoop);
+        inferenceLoop();
+      } catch (err) {
+        console.error("Erro ao acessar a webcam:", err);
+        if (loading) loading.textContent = "Erro ao acessar a webcam. Por favor, conceda permissão para usar a câmera.";
+      }
+    }
+
+    function drawLoop() {
+      if (!isCamRunning) return;
+      
+      const video = document.getElementById('webcam-video');
+      const canvas = document.getElementById('output-canvas');
+      if (!video || !canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      
+      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
+      
+      // Desenhar o frame atual da webcam
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Desenhar caixas delimitadoras
+      currentDetections.forEach(det => {
+        const scaleX = canvas.width / 640;
+        const scaleY = canvas.height / 640;
+        
+        const x1 = det.box[0] * scaleX;
+        const y1 = det.box[1] * scaleY;
+        const w = (det.box[2] - det.box[0]) * scaleX;
+        const h = (det.box[3] - det.box[1]) * scaleY;
+        
+        ctx.strokeStyle = det.color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x1, y1, w, h);
+        
+        ctx.fillStyle = det.color;
+        ctx.font = "bold 16px 'Plus Jakarta Sans', sans-serif";
+        const labelText = `${det.label} ${(det.score * 100).toFixed(0)}%`;
+        const textWidth = ctx.measureText(labelText).width;
+        
+        ctx.fillRect(x1 - 1.5, y1 - 22, textWidth + 10, 22);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(labelText, x1 + 3, y1 - 6);
+      });
+      
+      requestAnimationFrame(drawLoop);
+    }
+
+    async function inferenceLoop() {
+      if (!isCamRunning) return;
+      const now = performance.now();
+      if (now - lastInferenceTime >= INFERENCE_INTERVAL && ortSession) {
+        lastInferenceTime = now;
+        await runInference();
+      }
+      setTimeout(inferenceLoop, 30);
+    }
+
+    async function runInference() {
+      const video = document.getElementById('webcam-video');
+      if (!video || video.readyState < 2) return;
+      
+      // 1. Redimensionar para 640x640 no canvas oculto
+      hiddenCtx.drawImage(video, 0, 0, 640, 640);
+      
+      // 2. Extrair pixels e preparar o formato CHW (RGB planar)
+      const imgData = hiddenCtx.getImageData(0, 0, 640, 640);
+      const data = imgData.data;
+      const float32Array = new Float32Array(3 * 640 * 640);
+      
+      for (let i = 0; i < 640 * 640; i++) {
+        float32Array[i] = data[i * 4] / 255.0;                   // Canal R
+        float32Array[640 * 640 + i] = data[i * 4 + 1] / 255.0;   // Canal G
+        float32Array[2 * 640 * 640 + i] = data[i * 4 + 2] / 255.0; // Canal B
+      }
+      
+      const inputTensor = new ort.Tensor('float32', float32Array, [1, 3, 640, 640]);
+      
+      try {
+        // 3. Rodar inferência
+        const outputs = await ortSession.run({ images: inputTensor });
+        const outputName = ortSession.outputNames[0];
+        const outputTensor = outputs[outputName];
+        const outputData = outputTensor.data;
+        
+        // YOLOv8 output: [1, 7, 8400]
+        const candidates = [];
+        const numClasses = 3;
+        const numAnchors = 8400;
+        
+        for (let col = 0; col < numAnchors; col++) {
+          let maxScore = -1;
+          let classId = -1;
+          for (let cl = 0; cl < numClasses; cl++) {
+            const score = outputData[(4 + cl) * numAnchors + col];
+            if (score > maxScore) {
+              maxScore = score;
+              classId = cl;
+            }
+          }
+          
+          if (maxScore >= 0.55) {
+            const xc = outputData[0 * numAnchors + col];
+            const yc = outputData[1 * numAnchors + col];
+            const w = outputData[2 * numAnchors + col];
+            const h = outputData[3 * numAnchors + col];
+            
+            const x1 = xc - w / 2;
+            const y1 = yc - h / 2;
+            const x2 = xc + w / 2;
+            const y2 = yc + h / 2;
+            
+            candidates.push({
+              box: [x1, y1, x2, y2],
+              score: maxScore,
+              classId: classId
+            });
+          }
+        }
+        
+        // 4. Aplicar Supressão Não-Máxima (NMS)
+        const nmsResults = nms(candidates, 0.45);
+        
+        const CLASSES = {
+          0: { label: 'Oculos Comum', color: '#FF9900' },
+          1: { label: 'Oculos EPI', color: '#10B981' },
+          2: { label: 'Sem Oculos EPI', color: '#EF4444' }
+        };
+        
+        const mapped = nmsResults.map(cand => {
+          const clsInfo = CLASSES[cand.classId];
+          return {
+            box: cand.box,
+            score: cand.score,
+            classId: cand.classId,
+            label: clsInfo.label,
+            color: clsInfo.color
+          };
+        });
+        
+        currentDetections = mapped;
+        
+        // 5. Salvar infrações no IndexedDB (Oculos Comum ou Sem Oculos EPI)
+        const infractions = mapped.filter(det => det.classId === 0 || det.classId === 2);
+        const timeNow = Date.now();
+        if (infractions.length > 0 && (timeNow - lastSaveTime >= 3000)) {
+          lastSaveTime = timeNow;
+          
+          // Capturar um thumbnail em Base64
+          const thumbCanvas = document.createElement('canvas');
+          thumbCanvas.width = 320;
+          thumbCanvas.height = 180;
+          const thumbCtx = thumbCanvas.getContext('2d');
+          thumbCtx.drawImage(video, 0, 0, 320, 180);
+          
+          // Desenhar as caixas de infração no thumbnail
+          infractions.forEach(inf => {
+            const scaleX = 320 / 640;
+            const scaleY = 180 / 640;
+            const x1 = inf.box[0] * scaleX;
+            const y1 = inf.box[1] * scaleY;
+            const w = (inf.box[2] - inf.box[0]) * scaleX;
+            const h = (inf.box[3] - inf.box[1]) * scaleY;
+            
+            thumbCtx.strokeStyle = inf.color;
+            thumbCtx.lineWidth = 2;
+            thumbCtx.strokeRect(x1, y1, w, h);
+            
+            thumbCtx.fillStyle = inf.color;
+            thumbCtx.font = "bold 9px Arial";
+            const labelText = inf.label;
+            thumbCtx.fillRect(x1 - 1, y1 - 11, thumbCtx.measureText(labelText).width + 4, 11);
+            thumbCtx.fillStyle = "#ffffff";
+            thumbCtx.fillText(labelText, x1 + 1, y1 - 2);
+          });
+          
+          const base64Img = thumbCanvas.toDataURL('image/jpeg', 0.85);
+          
+          const nowStr = new Date();
+          const detRecord = {
+            tipo: infractions[0].label,
+            data: nowStr.toLocaleDateString('pt-BR'),
+            hora: nowStr.toLocaleTimeString('pt-BR'),
+            confianca: `${(infractions[0].score * 100).toFixed(0)}%`,
+            imagem: base64Img
+          };
+          
+          saveDetection(detRecord).catch(err => console.error("Erro ao salvar detecção no DB:", err));
+        }
+      } catch (err) {
+        console.error("Erro durante a execução da IA:", err);
+      }
+    }
+
+    function nms(candidates, iouThreshold) {
+      candidates.sort((a, b) => b.score - a.score);
+      const selected = [];
+      const suppressed = new Set();
+      
+      for (let i = 0; i < candidates.length; i++) {
+        if (suppressed.has(i)) continue;
+        const boxA = candidates[i];
+        selected.push(boxA);
+        
+        for (let j = i + 1; j < candidates.length; j++) {
+          if (suppressed.has(j)) continue;
+          const boxB = candidates[j];
+          
+          const iou = calculateIoU(boxA.box, boxB.box);
+          if (iou > iouThreshold) {
+            suppressed.add(j);
+          }
+        }
+      }
+      return selected;
+    }
+
+    function calculateIoU(boxA, boxB) {
+      const xA = Math.max(boxA[0], boxB[0]);
+      const yA = Math.max(boxA[1], boxB[1]);
+      const xB = Math.min(boxA[2], boxB[2]);
+      const yB = Math.min(boxA[3], boxB[3]);
+      
+      const interArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
+      if (interArea === 0) return 0;
+      
+      const boxAArea = (boxA[2] - boxA[0]) * (boxA[3] - boxA[1]);
+      const boxBArea = (boxB[2] - boxB[0]) * (boxB[3] - boxB[1]);
+      
+      const unionArea = boxAArea + boxBArea - interArea;
+      return interArea / unionArea;
+    }
+
+    // ---- Auto-start ao entrar na página ----
     function startDetector(evt) {
       if (evt) evt.preventDefault();
 
-      const img = document.getElementById('live-stream-img');
-      if (img) img.alt = "Conectando à câmera...";
-
-      // Pedir ao PHP para iniciar o servidor Python (se ainda não estiver rodando)
-      fetch('run_detector.php').catch(() => {});
-
-      // Tentar conectar imediatamente e a cada 500ms
-      if (_pollTimer) clearInterval(_pollTimer);
-      let attempts = 0;
-
-      function tryConnect() {
-        attempts++;
-        const testImg = new Image();
-        testImg.onload = () => {
-          if (img) img.src = testImg.src;
-          if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
-        };
-        testImg.src = "http://127.0.0.1:5000/video_feed?t=" + new Date().getTime();
-        if (attempts > 60) { // Para depois de 30 segundos
-          if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
-        }
+      const loading = document.getElementById('camera-loading');
+      if (loading) {
+        loading.style.display = 'block';
+        loading.textContent = "Carregando modelo de IA...";
       }
 
-      tryConnect(); // Tentativa imediata
-      _pollTimer = setInterval(tryConnect, 500);
+      if (!ortSession) {
+        initModel().then(() => {
+          startWebcam();
+        });
+      } else {
+        startWebcam();
+      }
     }
 
     // Iniciar automaticamente ao carregar a página
@@ -630,12 +938,26 @@
 
     // ---- Desligar ao sair da página ----
     function shutdownDetector() {
-      if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
-      // sendBeacon é confiável mesmo ao fechar a aba
-      try { navigator.sendBeacon('http://127.0.0.1:5000/shutdown'); } catch(e) {}
-      // Limpar a imagem para não ficar travada
-      const img = document.getElementById('live-stream-img');
-      if (img) img.src = '';
+      isCamRunning = false;
+      if (webcamStream) {
+        webcamStream.getTracks().forEach(track => track.stop());
+        webcamStream = null;
+      }
+      const video = document.getElementById('webcam-video');
+      if (video) video.srcObject = null;
+      
+      const canvas = document.getElementById('output-canvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      
+      currentDetections = [];
+      const loading = document.getElementById('camera-loading');
+      if (loading) {
+        loading.style.display = 'block';
+        loading.textContent = "Câmera Parada";
+      }
     }
 
     window.addEventListener('beforeunload', shutdownDetector);
