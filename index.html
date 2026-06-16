@@ -647,6 +647,7 @@
     <ul class="nav-tabs" id="nav-tabs">
       <li><a href="#" data-page="inicio" class="active">Início</a></li>
       <li><a href="#" data-page="demo">Demonstração</a></li>
+      <li><a href="#" data-page="registro">Registro</a></li>
       <li><a href="#" data-page="grafico">Gráficos</a></li>
       <li><a href="#" data-page="cameras">Câmeras Ao Vivo</a></li>
     </ul>
@@ -859,6 +860,27 @@
     </div>
   </div>
 
+  <!-- ===== PAGE: REGISTRO ===== -->
+  <div class="page" id="page-registro">
+    <div class="demo-page" style="text-align: center;">
+      <div class="sec-tag">Registro</div>
+      <h2 class="sec-title">Registro de Ocorrência</h2>
+      <p class="sec-desc" style="margin: 0 auto 40px auto;">
+        Demonstração visual da interface para registro, acompanhamento e documentação oficial de ocorrências de segurança.
+      </p>
+
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <div class="video-card image-card" data-img="registro.png"
+          style="background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: none; box-shadow: none; width: 100%; max-width: 800px; aspect-ratio: auto;">
+          <img src="registro.png" alt="Imagem ilustrativa de registro"
+            style="width: 100%; height: auto; object-fit: contain; border-radius: 8px;">
+        </div>
+        <p style="font-size: 12px; color: var(--red); margin-top: 12px; font-weight: 600; cursor: pointer;" onclick="this.previousElementSibling.click()">🔍 Clique na imagem para ampliar</p>
+        <p style="margin-top: 20px; font-size: 13px; color: var(--muted); font-style: italic;">Fonte: Imagens ilustrativas</p>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== PAGE: CÂMERAS AO VIVO ===== -->
   <div class="page" id="page-cameras">
     <div class="cameras-page">
@@ -923,7 +945,7 @@
       </button>
       <img id="image-modal-content" src=""
         style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); background: #fff; cursor: zoom-in; transition: transform 0.3s ease;"
-        onclick="const zoomLvl = (this.src.includes('graficoDia07.png') || this.src.includes('graficoDia30.png')) ? 'scale(1.2)' : 'scale(1.5)'; if(this.style.transform === zoomLvl) { this.style.transform = 'scale(1)'; this.style.cursor = 'zoom-in'; } else { this.style.transform = zoomLvl; this.style.cursor = 'zoom-out'; }">
+        onclick="const zoomLvl = (this.src.includes('graficoDia07.png') || this.src.includes('graficoDia30.png')) ? 'scale(1.2)' : 'scale(1.5)'; if(this.style.transform === zoomLvl) { this.style.transform = 'scale(1)'; this.style.cursor = 'zoom-in'; } else { const r = this.getBoundingClientRect(); const x = ((event.clientX - r.left) / r.width) * 100; const y = ((event.clientY - r.top) / r.height) * 100; this.style.transformOrigin = x + '% ' + y + '%'; this.style.transform = zoomLvl; this.style.cursor = 'zoom-out'; }">
     </div>
   </div>
 
