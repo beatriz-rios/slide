@@ -5,10 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FACCHINI.EPI — Sistema Inteligente de Monitoramento</title>
-  <meta name="description" content="Sistema inteligente de monitoramento de EPIs com IA e Visão Computacional para a Facchini.">
+  <meta name="description"
+    content="Sistema inteligente de monitoramento de EPIs com IA e Visão Computacional para a Facchini.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <style>
     :root {
@@ -26,9 +28,15 @@
       --ease: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       font-family: var(--font);
@@ -40,281 +48,592 @@
 
     /* ===== NAVBAR ===== */
     nav {
-      position: fixed; top: 0; left: 0; width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
       height: 72px;
       padding: 0 6%;
-      display: flex; align-items: center; justify-content: space-between;
-      background: rgba(255,255,255,0.88);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       z-index: 500;
     }
 
     .logo {
-      font-weight: 800; font-size: 22px; color: var(--text);
-      text-decoration: none; letter-spacing: -0.5px;
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.5px;
     }
-    .logo b { color: var(--red); }
+
+    .logo b {
+      color: var(--red);
+    }
 
     .nav-tabs {
-      display: flex; gap: 6px; list-style: none;
-      background: #F0F0F2; border-radius: 12px; padding: 4px;
+      display: flex;
+      gap: 6px;
+      list-style: none;
+      background: #F0F0F2;
+      border-radius: 12px;
+      padding: 4px;
     }
+
     .nav-tabs a {
-      display: block; padding: 10px 22px; border-radius: 10px;
-      font-size: 13px; font-weight: 700; color: var(--muted);
-      text-decoration: none; transition: all 0.3s var(--ease);
+      display: block;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.3s var(--ease);
       white-space: nowrap;
     }
-    .nav-tabs a:hover { color: var(--text); }
+
+    .nav-tabs a:hover {
+      color: var(--text);
+    }
+
     .nav-tabs a.active {
-      background: var(--card); color: var(--text);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
     /* ===== PAGES ===== */
     .page {
-      position: absolute; top: 72px; left: 0; width: 100%;
+      position: absolute;
+      top: 72px;
+      left: 0;
+      width: 100%;
       height: calc(100vh - 72px);
-      display: none; overflow-y: auto;
+      display: none;
+      overflow-y: auto;
       animation: fadeUp 0.45s var(--ease);
     }
-    .page.active { display: block; }
+
+    .page.active {
+      display: block;
+    }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* ===== PAGE: INÍCIO ===== */
     .hero {
-      height: 100%; display: flex; position: relative; overflow: hidden;
+      height: 100%;
+      display: flex;
+      position: relative;
+      overflow: hidden;
     }
+
     .hero-content {
-      flex: 1; display: flex; flex-direction: column;
-      justify-content: center; padding: 0 7%; z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 7%;
+      z-index: 2;
     }
+
     .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
-      padding: 7px 16px; border-radius: 40px;
-      background: var(--red-glow); color: var(--red);
-      font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      align-self: flex-start;
+      padding: 7px 16px;
+      border-radius: 40px;
+      background: var(--red-glow);
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
       margin-bottom: 28px;
     }
+
     .hero-badge::before {
-      content: ''; width: 7px; height: 7px; border-radius: 50%;
-      background: var(--red); animation: pulse 1.4s ease-in-out infinite alternate;
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 1.4s ease-in-out infinite alternate;
     }
-    @keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
+
+    @keyframes pulse {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0.3;
+      }
+    }
 
     .hero h1 {
-      font-size: clamp(36px, 4.5vw, 56px); font-weight: 800;
-      line-height: 1.12; letter-spacing: -1.5px; margin-bottom: 20px;
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
       max-width: 620px;
     }
-    .hero h1 span { color: var(--red); }
+
+    .hero h1 span {
+      color: var(--red);
+    }
+
     .hero-desc {
-      font-size: 17px; line-height: 1.7; color: var(--muted);
-      max-width: 520px; margin-bottom: 40px;
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 40px;
     }
+
     .hero-features {
-      display: flex; gap: 32px;
+      display: flex;
+      gap: 32px;
     }
+
     .hero-feat {
-      display: flex; align-items: center; gap: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
+
     .hero-feat-icon {
-      width: 42px; height: 42px; border-radius: 10px;
-      background: var(--red-glow); color: var(--red);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--red-glow);
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    .hero-feat-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--text); }
-    .hero-feat-text small  { font-size: 11px; color: var(--muted); }
+
+    .hero-feat-text strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .hero-feat-text small {
+      font-size: 11px;
+      color: var(--muted);
+    }
 
     .hero-visual {
-      position: absolute; top: 0; right: 0;
-      width: 48%; height: 100%;
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 48%;
+      height: 100%;
       background: radial-gradient(circle at 70% 30%, #ff3a44 0%, #9a0a10 100%);
       clip-path: polygon(12% 0, 100% 0, 100% 100%, 0% 100%);
       overflow: hidden;
     }
+
     .hero-visual-img {
-      position: absolute; inset: 0;
-      background-size: cover; background-position: center;
-      opacity: 0; transition: opacity 1.2s ease-in-out;
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
     }
-    .hero-visual-img.active { opacity: 0.35; }
+
+    .hero-visual-img.active {
+      opacity: 0.35;
+    }
+
     .hero-particles {
-      position: absolute; inset: 0; pointer-events: none; z-index: 2;
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
     }
+
     .particle {
-      position: absolute; border-radius: 50%;
-      background: rgba(255,255,255,0.06);
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
       animation: floatUp linear infinite;
     }
+
     @keyframes floatUp {
-      0%   { transform: translateY(100vh) scale(0.5); opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 0.4; }
-      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+      0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 0.4;
+      }
+
+      100% {
+        transform: translateY(-10vh) scale(1);
+        opacity: 0;
+      }
     }
 
     /* ===== PAGE: DEMONSTRAÇÃO ===== */
-    .demo-page { padding: 60px 7%; }
+    .demo-page {
+      padding: 60px 7%;
+    }
+
     .sec-tag {
-      font-size: 12px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 2px; color: var(--red); margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--red);
+      margin-bottom: 8px;
     }
+
     .sec-title {
-      font-size: 32px; font-weight: 800; color: var(--text);
-      line-height: 1.2; margin-bottom: 12px;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 12px;
     }
+
     .sec-desc {
-      font-size: 15px; line-height: 1.8; color: var(--muted);
-      max-width: 800px; margin-bottom: 48px;
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 800px;
+      margin-bottom: 48px;
     }
 
     .video-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
     }
+
     .video-card {
-      position: relative; border-radius: 16px; overflow: hidden;
-      background: #000; aspect-ratio: 16/9; cursor: pointer;
-      border: 1px solid var(--border); transition: all 0.4s var(--ease);
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 16/9;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.4s var(--ease);
     }
+
     .video-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 20px 50px rgba(227,28,37,0.12);
+      box-shadow: 0 20px 50px rgba(227, 28, 37, 0.12);
       border-color: var(--red);
     }
+
     .video-card-bg {
-      position: absolute; inset: 0;
-      background-size: cover; background-position: center;
-      opacity: 0.5; transition: all 0.4s ease;
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.5;
+      transition: all 0.4s ease;
     }
-    .video-card:hover .video-card-bg { opacity: 0.7; transform: scale(1.05); }
-    
+
+    .video-card:hover .video-card-bg {
+      opacity: 0.7;
+      transform: scale(1.05);
+    }
+
     .image-card img {
       transition: transform 0.4s var(--ease);
     }
+
     .image-card:hover img {
       transform: scale(1.05);
     }
 
     .video-play {
-      position: absolute; top: 50%; left: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
-      width: 52px; height: 52px; border-radius: 50%;
-      background: var(--red); display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 20px rgba(227,28,37,0.5);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(227, 28, 37, 0.5);
       transition: transform 0.3s var(--ease);
       z-index: 2;
     }
-    .video-card:hover .video-play { transform: translate(-50%, -50%) scale(1.12); }
+
+    .video-card:hover .video-play {
+      transform: translate(-50%, -50%) scale(1.12);
+    }
+
     .video-label {
-      text-align: center; margin-top: 12px;
-      font-size: 14px; font-weight: 600; color: var(--text);
+      text-align: center;
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
     }
 
     /* ===== PAGE: CÂMERAS ===== */
-    .cameras-page { padding: 40px 7%; display: flex; flex-direction: column; align-items: center; }
+    .cameras-page {
+      padding: 40px 7%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     .camera-wrapper {
-      position: relative; border-radius: 20px; overflow: hidden;
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
       background: #000;
-      width: 75vw; height: 56vw; max-height: 70vh;
-      display: flex; align-items: center; justify-content: center;
+      width: 75vw;
+      height: 56vw;
+      max-height: 70vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border: 2px solid var(--black-light);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
       flex-shrink: 0;
     }
+
     .camera-wrapper img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+
     .camera-off-msg {
-      color: #555; font-size: 15px; font-weight: 600;
-      text-align: center; padding: 40px;
+      color: #555;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      padding: 40px;
     }
+
     .camera-hud {
-      position: absolute; top: 16px; left: 16px;
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
-      padding: 6px 14px; border-radius: 8px;
-      color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      padding: 6px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
       font-family: 'JetBrains Mono', monospace;
     }
+
     .rec-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #EF4444; animation: pulse 1s infinite alternate;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EF4444;
+      animation: pulse 1s infinite alternate;
     }
+
     .btn-fullscreen {
-      position: absolute; top: 16px; right: 16px;
-      background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
-      color: #fff; border-radius: 8px; padding: 8px 16px;
-      cursor: pointer; font-weight: 700; font-size: 13px;
-      backdrop-filter: blur(6px); transition: all 0.2s;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      backdrop-filter: blur(6px);
+      transition: all 0.2s;
     }
-    .btn-fullscreen:hover { background: var(--red); border-color: var(--red); }
+
+    .btn-fullscreen:hover {
+      background: var(--red);
+      border-color: var(--red);
+    }
 
     .history-link-box {
-      margin-top: 36px; text-align: center;
+      margin-top: 36px;
+      text-align: center;
     }
+
     .btn-history {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 16px 36px; border-radius: 12px;
-      background: var(--black); color: #fff;
-      font-size: 15px; font-weight: 700; text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      border-radius: 12px;
+      background: var(--black);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
       transition: all 0.3s var(--ease);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     }
+
     .btn-history:hover {
-      background: var(--red); transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(227,28,37,0.35);
+      background: var(--red);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(227, 28, 37, 0.35);
     }
+
     .camera-status {
-      display: inline-flex; align-items: center; gap: 8px;
-      margin-top: 16px; font-size: 13px; font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--muted);
     }
-    .camera-status.online { color: #10B981; }
-    .camera-status .status-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+
+    .camera-status.online {
+      color: #10B981;
     }
-    .camera-status.online .status-dot { animation: pulse 1s infinite alternate; }
+
+    .camera-status .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .camera-status.online .status-dot {
+      animation: pulse 1s infinite alternate;
+    }
 
     /* ===== VIDEO MODAL ===== */
     .modal-overlay {
-      position: fixed; inset: 0; z-index: 9999;
-      display: none; align-items: center; justify-content: center;
-      background: rgba(10,10,12,0.8); backdrop-filter: blur(14px);
-      opacity: 0; transition: opacity 0.35s ease;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 10, 12, 0.8);
+      backdrop-filter: blur(14px);
+      opacity: 0;
+      transition: opacity 0.35s ease;
     }
-    .modal-overlay.open { display: flex; opacity: 1; }
+
+    .modal-overlay.open {
+      display: flex;
+      opacity: 1;
+    }
+
     .modal-box {
-      position: relative; width: 90%; max-width: 960px;
-      aspect-ratio: 16/9; background: #000; border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      position: relative;
+      width: 90%;
+      max-width: 960px;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
       overflow: hidden;
-      transform: scale(0.92); transition: transform 0.35s var(--ease);
+      transform: scale(0.92);
+      transition: transform 0.35s var(--ease);
     }
-    .modal-overlay.open .modal-box { transform: scale(1); }
+
+    .modal-overlay.open .modal-box {
+      transform: scale(1);
+    }
+
     .modal-close {
-      position: absolute; top: 14px; right: 14px;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15);
-      color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.3s; z-index: 5;
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      z-index: 5;
     }
-    .modal-close:hover { background: var(--red); border-color: var(--red); transform: rotate(90deg); }
-    .modal-body { width: 100%; height: 100%; }
-    .modal-body iframe, .modal-body video { width: 100%; height: 100%; border: none; }
+
+    .modal-close:hover {
+      background: var(--red);
+      border-color: var(--red);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      width: 100%;
+      height: 100%;
+    }
+
+    .modal-body iframe,
+    .modal-body video {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 900px) {
-      .hero-visual { width: 100%; clip-path: none; opacity: 0.2; }
-      .hero-content { padding: 0 5%; }
-      .hero-features { flex-direction: column; gap: 16px; }
-      .video-grid { grid-template-columns: 1fr; }
+      .hero-visual {
+        width: 100%;
+        clip-path: none;
+        opacity: 0.2;
+      }
+
+      .hero-content {
+        padding: 0 5%;
+      }
+
+      .hero-features {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -345,7 +664,10 @@
         <div class="hero-features">
           <div class="hero-feat">
             <div class="hero-feat-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
             </div>
             <div class="hero-feat-text">
               <strong>100% Conformidade</strong>
@@ -354,7 +676,11 @@
           </div>
           <div class="hero-feat">
             <div class="hero-feat-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+              </svg>
             </div>
             <div class="hero-feat-text">
               <strong>Tempo Real</strong>
@@ -363,7 +689,11 @@
           </div>
           <div class="hero-feat">
             <div class="hero-feat-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
             </div>
             <div class="hero-feat-text">
               <strong>IA + Visão Computacional</strong>
@@ -385,41 +715,91 @@
   <div class="page" id="page-grafico">
     <div class="demo-page" style="text-align: center;">
       <div class="sec-tag">Estatísticas</div>
-      <h2 class="sec-title">Análise de Desvios</h2>
+      <h2 class="sec-title">Ocorrências do Sistema</h2>
       <p class="sec-desc" style="margin: 0 auto 40px auto;">
         Acompanhe o volume de ocorrências por setor e o detalhamento por funcionário nas áreas de maior risco.
       </p>
-      
+
+      <!-- Gráficos Evolutivos (30 Dias e 7 Dias) -->
+      <div style="margin-bottom: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+        <!-- Gráfico 30 Dias -->
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div class="video-label" style="margin-bottom: 4px; font-size: 18px; margin-top: 0;">Ocorrências "Sem EPI"
+            (Diário)</div>
+          <p style="font-size: 14px; color: var(--muted); margin-bottom: 16px; text-align: center; max-width: 500px;">
+            Este gráfico mostra a <b>hora exata em que ocorreu a ocorrência do funcionário sem EPI</b> e o respectivo
+            dia, ao longo de 30 dias de um mês.
+          </p>
+          <div class="video-card image-card" data-img="graficoDia30.png"
+            style="background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: none; box-shadow: none; width: 100%; aspect-ratio: auto;">
+            <img src="graficoDia30.png" alt="Ocorrências de Sem EPI em 30 Dias"
+              style="width: 100%; height: auto; object-fit: contain; border-radius: 8px;">
+          </div>
+          <p style="font-size: 12px; color: var(--red); margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="this.previousElementSibling.click()">🔍 Clique na imagem para ampliar</p>
+        </div>
+
+        <!-- Gráfico 7 Dias -->
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div class="video-label" style="margin-bottom: 8px; font-size: 18px; margin-top: 0;">Ocorrências "Sem EPI"
+            (Semanal)</div>
+          <p style="font-size: 14px; color: var(--muted); margin-bottom: 16px; text-align: center; max-width: 500px;">
+            Este gráfico semanal detalha a <b>hora exata em que ocorreu a ocorrência do funcionário sem EPI</b> e o
+            respectivo dia, dentro de uma semana.
+          </p>
+          <div class="video-card image-card" data-img="graficoDia07.png"
+            style="background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: none; box-shadow: none; width: 100%; aspect-ratio: auto;">
+            <img src="graficoDia07.png" alt="Ocorrências de Sem EPI em 7 Dias"
+              style="width: 100%; height: auto; object-fit: contain; border-radius: 8px;">
+          </div>
+          <p style="font-size: 12px; color: var(--red); margin-top: 4px; font-weight: 600; cursor: pointer;" onclick="this.previousElementSibling.click()">🔍 Clique na imagem para ampliar</p>
+        </div>
+
+      </div>
+
       <div class="video-grid" style="gap: 24px;">
         <!-- Gráfico 1 -->
-        <div>
-          <div class="video-card image-card" data-img="graficoSetores.png" style="background: var(--card); padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-            <img src="graficoSetores.png" alt="Gráfico de Ocorrências por Setor" style="width: 100%; height: 100%; object-fit: cover;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div class="video-label" style="margin-bottom: 4px; margin-top: 0;">Ocorrências por Setor</div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px; text-align: center;">Comparativo geral de
+            ocorrência mensal</p>
+          <div class="video-card image-card" data-img="graficoSetores.png"
+            style="background: var(--card); padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); width: 100%;">
+            <img src="graficoSetores.png" alt="Gráfico de Ocorrências por Setor"
+              style="width: 100%; height: 100%; object-fit: cover;">
           </div>
-          <div class="video-label" style="margin-top: 16px;">Ocorrências por Setor</div>
-          <p style="font-size: 12px; color: var(--muted); margin-top: 4px; text-align: center;">Comparativo geral</p>
+          <p style="font-size: 12px; color: var(--red); margin-top: 12px; font-weight: 600; cursor: pointer;" onclick="this.previousElementSibling.click()">🔍 Clique na imagem para ampliar</p>
         </div>
-        
+
         <!-- Gráfico 2 -->
-        <div>
-          <div class="video-card image-card" data-img="graficoTDSsetor.png" style="background: var(--card); padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-            <img src="graficoTDSsetor.png" alt="TDS - Ocorrências por Funcionário" style="width: 100%; height: 100%; object-fit: cover;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div class="video-label" style="margin-bottom: 4px; margin-top: 0;">Setor: TDS</div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px; text-align: center;">Ocorrências por
+            funcionário (Mensal)</p>
+          <div class="video-card image-card" data-img="graficoTDSsetor.png"
+            style="background: var(--card); padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); width: 100%;">
+            <img src="graficoTDSsetor.png" alt="TDS - Ocorrências por Funcionário"
+              style="width: 100%; height: 100%; object-fit: cover;">
           </div>
-          <div class="video-label" style="margin-top: 16px;">Setor: TDS</div>
-          <p style="font-size: 12px; color: var(--muted); margin-top: 4px; text-align: center;">Ocorrências por funcionário</p>
+          <p style="font-size: 12px; color: var(--red); margin-top: 12px; font-weight: 600; cursor: pointer;" onclick="this.previousElementSibling.click()">🔍 Clique na imagem para ampliar</p>
         </div>
 
         <!-- Gráfico 3 -->
-        <div>
-          <div class="video-card image-card" data-img="graficoAlmoxarifasetor.png" style="background: var(--card); padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-            <img src="graficoAlmoxarifasetor.png" alt="Almoxarifado - Ocorrências por Funcionário" style="width: 100%; height: 100%; object-fit: cover;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div class="video-label" style="margin-bottom: 4px; margin-top: 0;">Setor: Almoxarifado</div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px; text-align: center;">Ocorrências por
+            funcionário (Mensal)</p>
+          <div class="video-card image-card" data-img="graficoAlmoxarifasetor.png"
+            style="background: var(--card); padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); width: 100%;">
+            <img src="graficoAlmoxarifasetor.png" alt="Almoxarifado - Ocorrências por Funcionário"
+              style="width: 100%; height: 100%; object-fit: cover;">
           </div>
-          <div class="video-label" style="margin-top: 16px;">Setor: Almoxarifado</div>
-          <p style="font-size: 12px; color: var(--muted); margin-top: 4px; text-align: center;">Ocorrências por funcionário</p>
+          <p style="font-size: 12px; color: var(--red); margin-top: 12px; font-weight: 600; cursor: pointer;" onclick="this.previousElementSibling.click()">🔍 Clique na imagem para ampliar</p>
         </div>
       </div>
-      
-      <p style="margin-top: 30px; font-size: 13px; color: var(--muted); font-style: italic;">Fonte: Imagens ilustrativas</p>
+
+      <p style="margin-top: 30px; font-size: 13px; color: var(--muted); font-style: italic;">Fonte: Imagens ilustrativas
+      </p>
     </div>
   </div>
 
@@ -437,10 +817,13 @@
       <div class="video-grid" style="gap: 24px;">
         <!-- Video 1 -->
         <div>
-          <div class="video-card" data-video="https://drive.google.com/file/d/1JU6IbUXSz4fAi1901rGbd3k_tslW74-C/view?usp=drive_link">
+          <div class="video-card"
+            data-video="https://drive.google.com/file/d/1JU6IbUXSz4fAi1901rGbd3k_tslW74-C/view?usp=drive_link">
             <div class="video-card-bg" style="background-image: url('_capa/test_thumb.jpg');"></div>
             <div class="video-play">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
             </div>
           </div>
           <div class="video-label">01. Detecção de EPI</div>
@@ -448,9 +831,13 @@
         <!-- Video 2 -->
         <div>
           <div class="video-card" data-video="https://drive.google.com/file/d/1iTuxYjWzTC77Hke5rfJ1uuISwSw2y0Km/view">
-            <div class="video-card-bg" style="background-image: url('https://drive.google.com/thumbnail?id=1iTuxYjWzTC77Hke5rfJ1uuISwSw2y0Km&sz=w800');"></div>
+            <div class="video-card-bg"
+              style="background-image: url('https://drive.google.com/thumbnail?id=1iTuxYjWzTC77Hke5rfJ1uuISwSw2y0Km&sz=w800');">
+            </div>
             <div class="video-play">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
             </div>
           </div>
           <div class="video-label">02. Detecção de EPI</div>
@@ -460,7 +847,9 @@
           <div class="video-card" data-video="https://drive.google.com/file/d/11JieWSC_A43WG0Ywm97k8HD-KsQi7-PB/view">
             <div class="video-card-bg" style="background-image: url('_capa/thumb_video3.jpg');"></div>
             <div class="video-play">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
             </div>
           </div>
           <div class="video-label">03. Detecção de EPI</div>
@@ -497,7 +886,11 @@
 
       <div class="history-link-box">
         <a href="IA_apresentacao/index.html" class="btn-history" id="btn-history">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
           Histórico de Ocorrências
         </a>
       </div>
@@ -508,7 +901,10 @@
   <div class="modal-overlay" id="video-modal">
     <div class="modal-box">
       <button class="modal-close" id="modal-close">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
       <div class="modal-body" id="modal-body"></div>
     </div>
@@ -516,11 +912,17 @@
 
   <!-- ===== IMAGE MODAL ===== -->
   <div class="modal-overlay" id="image-modal">
-    <div class="modal-box" style="background: transparent; border: none; box-shadow: none; display: flex; align-items: center; justify-content: center; height: 90vh;">
+    <div class="modal-box"
+      style="background: transparent; border: none; box-shadow: none; display: flex; align-items: center; justify-content: center; height: 95vh; width: 95vw; max-width: 95vw; aspect-ratio: auto;">
       <button class="modal-close" id="image-modal-close" style="top: -10px; right: 0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
-      <img id="image-modal-content" src="" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); background: #fff;">
+      <img id="image-modal-content" src=""
+        style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); background: #fff; cursor: zoom-in; transition: transform 0.3s ease;"
+        onclick="const zoomLvl = (this.src.includes('graficoDia07.png') || this.src.includes('graficoDia30.png')) ? 'scale(1.2)' : 'scale(1.5)'; if(this.style.transform === zoomLvl) { this.style.transform = 'scale(1)'; this.style.cursor = 'zoom-in'; } else { this.style.transform = zoomLvl; this.style.cursor = 'zoom-out'; }">
     </div>
   </div>
 
@@ -551,7 +953,7 @@
       cameraStatusText.textContent = 'IA ativa — monitorando';
 
       // Start detector via PHP
-      fetch('run_detector.php').catch(() => {});
+      fetch('run_detector.php').catch(() => { });
 
       // Give detector a moment to boot, then connect stream
       setTimeout(() => {
@@ -578,7 +980,7 @@
       cameraStatusText.textContent = 'Câmera desligada';
 
       // Shutdown detector (kills Flask + releases camera)
-      fetch('http://127.0.0.1:5000/shutdown').catch(() => {});
+      fetch('http://127.0.0.1:5000/shutdown').catch(() => { });
     }
 
     // ---- Navigation ----
@@ -621,7 +1023,7 @@
     });
 
     // ---- Hero Carousel ----
-    (function() {
+    (function () {
       const slides = document.querySelectorAll('.hero-visual-img');
       if (!slides.length) return;
       let idx = 0;
@@ -633,7 +1035,7 @@
     })();
 
     // ---- Hero Particles ----
-    (function() {
+    (function () {
       const c = document.getElementById('hero-particles');
       if (!c) return;
       for (let i = 0; i < 14; i++) {
@@ -642,19 +1044,19 @@
         const s = Math.random() * 50 + 15;
         p.style.cssText = `
           width:${s}px; height:${s}px;
-          left:${Math.random()*100}%; bottom:-${s}px;
-          animation-duration:${Math.random()*12+10}s;
-          animation-delay:-${Math.random()*12}s;
-          opacity:${Math.random()*0.06+0.02};
+          left:${Math.random() * 100}%; bottom:-${s}px;
+          animation-duration:${Math.random() * 12 + 10}s;
+          animation-delay:-${Math.random() * 12}s;
+          opacity:${Math.random() * 0.06 + 0.02};
         `;
         c.appendChild(p);
       }
     })();
 
     // ---- Video Modal ----
-    (function() {
+    (function () {
       const modal = document.getElementById('video-modal');
-      const body  = document.getElementById('modal-body');
+      const body = document.getElementById('modal-body');
       const close = document.getElementById('modal-close');
 
       document.querySelectorAll('.video-card:not(.image-card)').forEach(card => {
@@ -663,9 +1065,9 @@
           if (src && (src.includes('drive.google.com') || src.includes('docs.google.com'))) {
             let iframeUrl = src;
             if (src.includes('/view') || src.includes('/edit')) {
-                iframeUrl = src.replace(/\/(view|edit).*/, '/preview');
+              iframeUrl = src.replace(/\/(view|edit).*/, '/preview');
             } else if (!src.includes('/preview')) {
-                iframeUrl = src + '/preview';
+              iframeUrl = src + '/preview';
             }
             body.innerHTML = `<iframe src="${iframeUrl}" allowfullscreen style="width:100%;height:100%;border:none;background:#000;"></iframe>`;
           } else if (src) {
@@ -686,7 +1088,7 @@
     })();
 
     // ---- Image Modal ----
-    (function() {
+    (function () {
       const modal = document.getElementById('image-modal');
       const imgContent = document.getElementById('image-modal-content');
       const close = document.getElementById('image-modal-close');
@@ -703,7 +1105,11 @@
 
       function closeModal() {
         modal.classList.remove('open');
-        setTimeout(() => { imgContent.src = ''; }, 350);
+        setTimeout(() => { 
+          imgContent.src = ''; 
+          imgContent.style.transform = 'scale(1)';
+          imgContent.style.cursor = 'zoom-in';
+        }, 350);
       }
 
       close.addEventListener('click', closeModal);
@@ -715,7 +1121,7 @@
     function toggleFullScreen() {
       const el = document.getElementById('camera-container');
       if (!document.fullscreenElement) {
-        el.requestFullscreen().catch(() => {});
+        el.requestFullscreen().catch(() => { });
       } else {
         document.exitFullscreen();
       }

@@ -8,7 +8,3 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:5000
  * Running on http://10.91.131.48:5000
 Press CTRL+C to quit
-127.0.0.1 - - [16/Jun/2026 07:56:58] "GET /video_feed?1781607417842 HTTP/1.1" 200 -
-Loading C:\xampp\htdocs\slide\IA_apresentacao\best.engine for TensorRT inference...
-[06/16/2026-07:56:58] [TRT] [I] Loaded engine size: 8 MiB
-[06/16/2026-07:56:58] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +2, now: CPU 0, GPU 8 (MiB)
