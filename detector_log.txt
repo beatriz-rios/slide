@@ -8,12 +8,7 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:5000
  * Running on http://10.91.131.48:5000
 Press CTRL+C to quit
-127.0.0.1 - - [16/Jun/2026 11:15:49] "GET /clear_history HTTP/1.1" 200 -
-127.0.0.1 - - [16/Jun/2026 11:15:51] "GET /history?1781619349404 HTTP/1.1" 200 -
-127.0.0.1 - - [16/Jun/2026 11:15:51] "GET /history?1781619349405 HTTP/1.1" 200 -
-127.0.0.1 - - [16/Jun/2026 11:15:51] "GET /history?1781619349410 HTTP/1.1" 200 -
-Desligando detector...
-Loading C:\xampp\htdocs\slide\IA_apresentacao\best.engine for TensorRT inference...
-127.0.0.1 - - [16/Jun/2026 11:15:51] "GET /video_feed?1781619351518 HTTP/1.1" 200 -
-[06/16/2026-11:15:51] [TRT] [I] Loaded engine size: 8 MiB
-[06/16/2026-11:15:51] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +2, now: CPU 0, GPU 8 (MiB)
+Loading C:\xampp\htdocs\slide\IA_apresentacao\best(2).engine for TensorRT inference...
+[06/16/2026-15:41:53] [TRT] [I] Loaded engine size: 52 MiB
+[06/16/2026-15:41:53] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +39, now: CPU 0, GPU 88 (MiB)
+127.0.0.1 - - [16/Jun/2026 15:41:54] "GET /video_feed?1781635314595 HTTP/1.1" 200 -

@@ -11,7 +11,7 @@ from ultralytics import YOLO
 # ============================================================
 # Configurações
 # ============================================================
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'best.engine')
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'best(2).engine')
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'captures')
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
@@ -20,11 +20,11 @@ app = Flask(__name__)
 CORS(app)
 
 # YOLO
-IMG_SIZE = 320          # Deve ser igual ao usado na exportação do .engine
+IMG_SIZE = 640          # Deve ser igual ao usado na exportação do .engine
 CONF_THRESHOLD = 0.40
 JPEG_QUALITY = 70       # Menor = encoding mais rápido
-CAM_WIDTH = 640         # Resolução menor = tudo mais leve
-CAM_HEIGHT = 480
+CAM_WIDTH = 1920         # Resolução menor = tudo mais leve
+CAM_HEIGHT = 1080
 SMOOTH_FACTOR = 0.30    # Suavização das boxes (0 = sem suavização, 1 = sem movimento)
 MAX_MATCH_DIST = 180    # Distância máxima (px) para associar uma box antiga a uma nova
 STALE_FRAMES = 90       # Inferências sem match antes de remover (~1.5s a 60fps)
@@ -154,6 +154,47 @@ class Detector:
         best_label = counts.most_common(1)[0][0]
         best_color = colors_map.get(best_label, (255, 255, 255))
         return best_label, best_color
+
+    # ----------------------------------------------------------
+    # Remover caixas sobrepostas de classes DIFERENTES
+    # (ex: 'oculos_epi' verde dentro de 'sem_oculos' vermelho)
+    # ----------------------------------------------------------
+    def _remove_overlapping(self, dets, iou_thresh=0.45, contain_thresh=0.7):
+        """Remove caixas sobrepostas mesmo de classes diferentes.
+        Mantém só a de MAIOR confiança em cada região.
+        Trata também o caso de uma caixa pequena DENTRO de uma grande."""
+        if len(dets) <= 1:
+            return dets
+
+        def metrics(a, b):
+            # a, b = (x1, y1, x2, y2, label, conf, color)
+            xa1, ya1, xa2, ya2 = a[0], a[1], a[2], a[3]
+            xb1, yb1, xb2, yb2 = b[0], b[1], b[2], b[3]
+            ix1, iy1 = max(xa1, xb1), max(ya1, yb1)
+            ix2, iy2 = min(xa2, xb2), min(ya2, yb2)
+            iw, ih = max(0, ix2 - ix1), max(0, iy2 - iy1)
+            inter = iw * ih
+            area_a = max(1, (xa2 - xa1) * (ya2 - ya1))
+            area_b = max(1, (xb2 - xb1) * (yb2 - yb1))
+            union = area_a + area_b - inter
+            iou = inter / union if union > 0 else 0
+            # quanto da MENOR caixa está contida na outra
+            contain = inter / min(area_a, area_b)
+            return iou, contain
+
+        # ordena por confiança (maior primeiro)
+        dets = sorted(dets, key=lambda d: d[5], reverse=True)
+        keep = []
+        for d in dets:
+            duplicada = False
+            for k in keep:
+                iou, contain = metrics(d, k)
+                if iou >= iou_thresh or contain >= contain_thresh:
+                    duplicada = True
+                    break
+            if not duplicada:
+                keep.append(d)
+        return keep
 
     # ----------------------------------------------------------
     # Processar novas detecções da IA (chamado APENAS pela AI thread)
@@ -358,6 +399,10 @@ class Detector:
                             "confianca": f"{conf*100:.0f}%",
                             "imagem": filename
                         })
+
+            # Remove caixas sobrepostas de classes diferentes
+            # (resolve verde + vermelho no mesmo rosto)
+            new_dets = self._remove_overlapping(new_dets)
 
             # Processar detecções: matching + estabilização (1x por inferência)
             self._process_new_detections(new_dets)

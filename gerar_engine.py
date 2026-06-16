@@ -3,8 +3,8 @@ import time
 import torch
 from ultralytics import YOLO
 
-MODEL_PT = os.path.join("IA_apresentacao", "best.pt")
-IMGSZ = 320       # Mesmo tamanho usado no detector_web.py
+MODEL_PT = os.path.join("IA_apresentacao", "best(2).pt")
+IMGSZ = 640      # Mesmo tamanho usado no detector_web.py
 HALF = True        # FP16 para RTX 3050
 
 print("=" * 55)
